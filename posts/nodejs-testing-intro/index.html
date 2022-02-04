@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Node.js testing - Intro | Cesar Zagonel</title>
+<meta name="keywords" content="" />
+<meta name="description" content="As example, we are going to start with this basic hello world application:
+index.js:
+const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
+{ &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest.">
+<meta name="author" content="">
+<link rel="canonical" href="http://example.org/posts/nodejs-testing-intro/" />
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="http://example.org/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://example.org/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://example.org/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://example.org/apple-touch-icon.png">
+<link rel="mask-icon" href="http://example.org/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.92.1" />
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Node.js testing - Intro" />
+<meta property="og:description" content="As example, we are going to start with this basic hello world application:
+index.js:
+const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
+{ &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://example.org/posts/nodejs-testing-intro/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-02-02T21:23:50-04:00" />
+<meta property="article:modified_time" content="2022-02-02T21:23:50-04:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Node.js testing - Intro"/>
+<meta name="twitter:description" content="As example, we are going to start with this basic hello world application:
+index.js:
+const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
+{ &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "http://example.org/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Node.js testing - Intro",
+      "item": "http://example.org/posts/nodejs-testing-intro/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Node.js testing - Intro",
+  "name": "Node.js testing - Intro",
+  "description": "As example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require(\u0026#39;express\u0026#39;) const app = express() const port = 3000 app.get(\u0026#39;/\u0026#39;, (req, res) =\u0026gt; { res.send(\u0026#39;Hello World!\u0026#39;) }) app.listen(port, () =\u0026gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \u0026#34;name\u0026#34;: \u0026#34;testing\u0026#34;, \u0026#34;version\u0026#34;: \u0026#34;1.0.0\u0026#34;, \u0026#34;main\u0026#34;: \u0026#34;index.js\u0026#34;, \u0026#34;license\u0026#34;: \u0026#34;MIT\u0026#34;, \u0026#34;dependencies\u0026#34;: { \u0026#34;express\u0026#34;: \u0026#34;^4.17.2\u0026#34; }, \u0026#34;scripts\u0026#34;: { \u0026#34;start\u0026#34;: \u0026#34;node index.js\u0026#34; } } For the test framework, we are going to use Jest.",
+  "keywords": [
+    
+  ],
+  "articleBody": "As example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require('express') const app = express() const port = 3000 app.get('/', (req, res) = { res.send('Hello World!') }) app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \"name\": \"testing\", \"version\": \"1.0.0\", \"main\": \"index.js\", \"license\": \"MIT\", \"dependencies\": { \"express\": \"^4.17.2\" }, \"scripts\": { \"start\": \"node index.js\" } } For the test framework, we are going to use Jest. So, let’s install it using the command:\nnpm install jest ---save-dev And now, we can write our first test:\ntest/app.test.js:\nit('should say hello world', () = { console.log('Hello World!') }) And now we can finally run our first test using the command:\nnpx jest You should see something similar on the terminal, if everything run smoothly:\n➜ npx jest console.log Hello World! at Object. (test/app.test.js:2:11) PASS ./test/app.test.js ✓ should say hello world (18 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.302 s, estimated 1 s Ran all test suites. To actually send requests to out express application, we are going to use supertest. Supertest provide us lots of functions to make our life easier. Let’s go ahead and install it using:\nnpm install supertest --save-dev In order to test our application, we need to move some of the express app creation logic into a file we can we can import from the test file:\nindex.js:\nconst createApp = require('./src/createApp') const app = createApp() const port = 3000 app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) src/createApp.js:\nconst express = require('express') module.exports = () = { const app = express() app.get('/', (req, res) = { res.send('Hello World!') }) return app } Now that we have all set, we can test our Hello World endpoint:\ntest/app.test.js:\nconst request = require('supertest') const createApp = require('../src/createApp') it('should say hello world', async () = { await request(createApp()) .get('/') .expect(200, 'Hello World!') }) If everything went well, you should see something like this on the terminal:\n➜ testing npx jest PASS ./test/app.test.js ✓ should say hello world (31 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.726 s, estimated 1 s Ran all test suites. That’s it! We successfully ran our first express test. Before we finish this first part, lets break down what is happening:\nawait request(createApp()) Here, we create a instance of out app and pass it to supertest. Supertest does all the heavy work of binding our application to a specific port and make sure each request goes to the right place.\n.get('/') Here, we tell supertest to send a GET request to the / path.\n.expect(200, 'Hello World!') And finally, here we make sure that the response status is 200 and the body is exacly Hello World!.\nSupertest is very helpful library, it allows us to verify different behaviours of our application like:\nThe endpoint should return a 500 error:\n.expect(500) The endpoint should return a object:\n.expect(200, { lorem: 'ipsum' }) And many others. You can know more about supertest here.\n Continue reading: Node.js testing - Database\n",
+  "wordCount" : "521",
+  "inLanguage": "en",
+  "datePublished": "2022-02-02T21:23:50-04:00",
+  "dateModified": "2022-02-02T21:23:50-04:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://example.org/posts/nodejs-testing-intro/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Cesar Zagonel",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://example.org/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://example.org/" accesskey="h" title="Cesar Zagonel (Alt + H)">Cesar Zagonel</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://example.org/archives" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title">
+      Node.js testing - Intro
+    </h1>
+    <div class="post-meta"><span title='2022-02-02 21:23:50 -0400 -04'>February 2, 2022</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>As example, we are going to start with this basic <code>hello world</code> application:</p>
+<p>index.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
+
+<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+})
+
+<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Example app listening at http://localhost:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+})
+</code></pre></div><p>package.json:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;testing&#34;</span>,
+  <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+  <span style="color:#f92672">&#34;main&#34;</span>: <span style="color:#e6db74">&#34;index.js&#34;</span>,
+  <span style="color:#f92672">&#34;license&#34;</span>: <span style="color:#e6db74">&#34;MIT&#34;</span>,
+  <span style="color:#f92672">&#34;dependencies&#34;</span>: {
+    <span style="color:#f92672">&#34;express&#34;</span>: <span style="color:#e6db74">&#34;^4.17.2&#34;</span>
+  },
+  <span style="color:#f92672">&#34;scripts&#34;</span>: {
+    <span style="color:#f92672">&#34;start&#34;</span>: <span style="color:#e6db74">&#34;node index.js&#34;</span>
+  }
+}
+</code></pre></div><p>For the test framework, we are going to use Jest. So, let&rsquo;s install it
+using the command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npm install jest ---save-dev
+</code></pre></div><p>And now, we can write our first test:</p>
+<p>test/app.test.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, () =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+})
+</code></pre></div><p>And now we can finally run our first test using the command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npx jest
+</code></pre></div><p>You should see something similar on the terminal, if everything run smoothly:</p>
+<pre tabindex="0"><code>➜  npx jest
+  console.log
+    Hello World!
+
+      at Object.&lt;anonymous&gt; (test/app.test.js:2:11)
+
+ PASS  ./test/app.test.js
+  ✓ should say hello world (18 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        0.302 s, estimated 1 s
+Ran all test suites.
+</code></pre><p>To actually send requests to out express application, we are going
+to use supertest. Supertest provide us lots of functions to make our life easier.
+Let&rsquo;s go ahead and install it using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npm install supertest --save-dev
+</code></pre></div><p>In order to test our application, we need to move some of the express app
+creation logic into a file we can we can import from the test file:</p>
+<p>index.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./src/createApp&#39;</span>)
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">createApp</span>()
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
+
+<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
+  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Example app listening at http://localhost:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+})
+</code></pre></div><p>src/createApp.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
+
+<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> () =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
+
+  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+  })
+
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">app</span>
+}
+</code></pre></div><p>Now that we have all set, we can test our Hello World endpoint:</p>
+<p>test/app.test.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/createApp&#39;</span>)
+
+<span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
+  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">createApp</span>())
+    .<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
+    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+})
+</code></pre></div><p>If everything went well, you should see something like this on the terminal:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  testing npx jest
+ PASS  ./test/app.test.js
+  ✓ should say hello world <span style="color:#f92672">(</span><span style="color:#ae81ff">31</span> ms<span style="color:#f92672">)</span>
+
+Test Suites: <span style="color:#ae81ff">1</span> passed, <span style="color:#ae81ff">1</span> total
+Tests:       <span style="color:#ae81ff">1</span> passed, <span style="color:#ae81ff">1</span> total
+Snapshots:   <span style="color:#ae81ff">0</span> total
+Time:        0.726 s, estimated <span style="color:#ae81ff">1</span> s
+Ran all test suites.
+</code></pre></div><p>That&rsquo;s it! We successfully ran our first express test.
+Before we finish this first part, lets break down what is happening:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">createApp</span>())
+</code></pre></div><p>Here, we create a instance of out app and pass it to supertest.
+Supertest does all the heavy work of binding our application to
+a specific port and make sure each request goes to the right place.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
+</code></pre></div><p>Here, we tell supertest to send a <code>GET</code> request to the <code>/</code> path.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+</code></pre></div><p>And finally, here we make sure that the response status is <code>200</code> and
+the body is exacly <code>Hello World!</code>.</p>
+<p>Supertest is very helpful library, it allows us to verify different behaviours of our
+application like:</p>
+<p>The endpoint should return a 500 error:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">500</span>)
+</code></pre></div><p>The endpoint should return a object:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, {
+  <span style="color:#a6e22e">lorem</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;ipsum&#39;</span>
+})
+</code></pre></div><p>And many others. You can know more about supertest <a href="https://www.npmjs.com/package/supertest">here</a>.</p>
+<p> </p>
+<p>Continue reading: <a href="/posts/nodejs-testing-database">Node.js testing - Database</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="http://example.org/">Cesar Zagonel</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Posts on Cesar Zagonel</title>
+    <link>http://example.org/posts/</link>
+    <description>Recent content in Posts on Cesar Zagonel</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 03 Feb 2022 23:09:08 -0400</lastBuildDate><atom:link href="http://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Node.js testing - Mocking</title>
+      <link>http://example.org/posts/nodejs-testing-mocking/</link>
+      <pubDate>Thu, 03 Feb 2022 23:09:08 -0400</pubDate>
+      
+      <guid>http://example.org/posts/nodejs-testing-mocking/</guid>
+      <description>On the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let&amp;rsquo;s say that we have function A that happens to call function B but we don&amp;rsquo;t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let&amp;rsquo;s say we have the following situation:</description>
+    </item>
+    
+    <item>
+      <title>Node.js testing - Third-party services</title>
+      <link>http://example.org/posts/nodejs-testing-third-party-services/</link>
+      <pubDate>Wed, 02 Feb 2022 21:24:03 -0400</pubDate>
+      
+      <guid>http://example.org/posts/nodejs-testing-third-party-services/</guid>
+      <description>Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
+Lets pretend we have a endpoint that creates pets:
+src/createApp.js:
+app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await pool.query( &amp;#39;insert into pets (name) values ($1) returning *&amp;#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:</description>
+    </item>
+    
+    <item>
+      <title>Node.js testing - Database</title>
+      <link>http://example.org/posts/nodejs-testing-database/</link>
+      <pubDate>Wed, 02 Feb 2022 21:23:54 -0400</pubDate>
+      
+      <guid>http://example.org/posts/nodejs-testing-database/</guid>
+      <description>Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
+Lets pretend we have a endpoint that creates pets:
+src/createApp.js:
+app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await pool.query( &amp;#39;insert into pets (name) values ($1) returning *&amp;#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:</description>
+    </item>
+    
+    <item>
+      <title>Node.js testing - Intro</title>
+      <link>http://example.org/posts/nodejs-testing-intro/</link>
+      <pubDate>Wed, 02 Feb 2022 21:23:50 -0400</pubDate>
+      
+      <guid>http://example.org/posts/nodejs-testing-intro/</guid>
+      <description>As example, we are going to start with this basic hello world application:
+index.js:
+const express = require(&amp;#39;express&amp;#39;) const app = express() const port = 3000 app.get(&amp;#39;/&amp;#39;, (req, res) =&amp;gt; { res.send(&amp;#39;Hello World!&amp;#39;) }) app.listen(port, () =&amp;gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
+{ &amp;#34;name&amp;#34;: &amp;#34;testing&amp;#34;, &amp;#34;version&amp;#34;: &amp;#34;1.0.0&amp;#34;, &amp;#34;main&amp;#34;: &amp;#34;index.js&amp;#34;, &amp;#34;license&amp;#34;: &amp;#34;MIT&amp;#34;, &amp;#34;dependencies&amp;#34;: { &amp;#34;express&amp;#34;: &amp;#34;^4.17.2&amp;#34; }, &amp;#34;scripts&amp;#34;: { &amp;#34;start&amp;#34;: &amp;#34;node index.js&amp;#34; } } For the test framework, we are going to use Jest.</description>
+    </item>
+    
+  </channel>
+</rss>
