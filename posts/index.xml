@@ -46,10 +46,7 @@ app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await
       <pubDate>Wed, 02 Feb 2022 21:23:50 -0400</pubDate>
       
       <guid>https://cesarzagonel.github.io/posts/nodejs-testing-intro/</guid>
-      <description>As example, we are going to start with this basic hello world application:
-index.js:
-const express = require(&amp;#39;express&amp;#39;) const app = express() const port = 3000 app.get(&amp;#39;/&amp;#39;, (req, res) =&amp;gt; { res.send(&amp;#39;Hello World!&amp;#39;) }) app.listen(port, () =&amp;gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
-{ &amp;#34;name&amp;#34;: &amp;#34;testing&amp;#34;, &amp;#34;version&amp;#34;: &amp;#34;1.0.0&amp;#34;, &amp;#34;main&amp;#34;: &amp;#34;index.js&amp;#34;, &amp;#34;license&amp;#34;: &amp;#34;MIT&amp;#34;, &amp;#34;dependencies&amp;#34;: { &amp;#34;express&amp;#34;: &amp;#34;^4.17.2&amp;#34; }, &amp;#34;scripts&amp;#34;: { &amp;#34;start&amp;#34;: &amp;#34;node index.js&amp;#34; } } For the test framework, we are going to use Jest.</description>
+      <description>All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me.</description>
     </item>
     
   </channel>

@@ -7,10 +7,7 @@
 <meta name="robots" content="index, follow">
 <title>Node.js testing - Intro | Cesar Zagonel</title>
 <meta name="keywords" content="" />
-<meta name="description" content="As example, we are going to start with this basic hello world application:
-index.js:
-const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
-{ &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest.">
+<meta name="description" content="All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me.">
 <meta name="author" content="">
 <link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
@@ -61,10 +58,7 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
 
     </style>
 </noscript><meta property="og:title" content="Node.js testing - Intro" />
-<meta property="og:description" content="As example, we are going to start with this basic hello world application:
-index.js:
-const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
-{ &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest." />
+<meta property="og:description" content="All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-02-02T21:23:50-04:00" />
@@ -72,10 +66,7 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Node.js testing - Intro"/>
-<meta name="twitter:description" content="As example, we are going to start with this basic hello world application:
-index.js:
-const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
-{ &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest."/>
+<meta name="twitter:description" content="All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me."/>
 
 
 <script type="application/ld+json">
@@ -104,12 +95,12 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
   "@type": "BlogPosting",
   "headline": "Node.js testing - Intro",
   "name": "Node.js testing - Intro",
-  "description": "As example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require(\u0026#39;express\u0026#39;) const app = express() const port = 3000 app.get(\u0026#39;/\u0026#39;, (req, res) =\u0026gt; { res.send(\u0026#39;Hello World!\u0026#39;) }) app.listen(port, () =\u0026gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \u0026#34;name\u0026#34;: \u0026#34;testing\u0026#34;, \u0026#34;version\u0026#34;: \u0026#34;1.0.0\u0026#34;, \u0026#34;main\u0026#34;: \u0026#34;index.js\u0026#34;, \u0026#34;license\u0026#34;: \u0026#34;MIT\u0026#34;, \u0026#34;dependencies\u0026#34;: { \u0026#34;express\u0026#34;: \u0026#34;^4.17.2\u0026#34; }, \u0026#34;scripts\u0026#34;: { \u0026#34;start\u0026#34;: \u0026#34;node index.js\u0026#34; } } For the test framework, we are going to use Jest.",
+  "description": "All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me.",
   "keywords": [
     
   ],
-  "articleBody": "As example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require('express') const app = express() const port = 3000 app.get('/', (req, res) = { res.send('Hello World!') }) app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \"name\": \"testing\", \"version\": \"1.0.0\", \"main\": \"index.js\", \"license\": \"MIT\", \"dependencies\": { \"express\": \"^4.17.2\" }, \"scripts\": { \"start\": \"node index.js\" } } For the test framework, we are going to use Jest. So, let’s install it using the command:\nnpm install jest ---save-dev And now, we can write our first test:\ntest/app.test.js:\nit('should say hello world', () = { console.log('Hello World!') }) And now we can finally run our first test using the command:\nnpx jest You should see something similar on the terminal, if everything run smoothly:\n➜ npx jest console.log Hello World! at Object. (test/app.test.js:2:11) PASS ./test/app.test.js ✓ should say hello world (18 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.302 s, estimated 1 s Ran all test suites. To actually send requests to out express application, we are going to use supertest. Supertest provide us lots of functions to make our life easier. Let’s go ahead and install it using:\nnpm install supertest --save-dev In order to test our application, we need to move some of the express app creation logic into a file we can we can import from the test file:\nindex.js:\nconst createApp = require('./src/createApp') const app = createApp() const port = 3000 app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) src/createApp.js:\nconst express = require('express') module.exports = () = { const app = express() app.get('/', (req, res) = { res.send('Hello World!') }) return app } Now that we have all set, we can test our Hello World endpoint:\ntest/app.test.js:\nconst request = require('supertest') const createApp = require('../src/createApp') it('should say hello world', async () = { await request(createApp()) .get('/') .expect(200, 'Hello World!') }) If everything went well, you should see something like this on the terminal:\n➜ testing npx jest PASS ./test/app.test.js ✓ should say hello world (31 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.726 s, estimated 1 s Ran all test suites. That’s it! We successfully ran our first express test. Before we finish this first part, lets break down what is happening:\nawait request(createApp()) Here, we create a instance of out app and pass it to supertest. Supertest does all the heavy work of binding our application to a specific port and make sure each request goes to the right place.\n.get('/') Here, we tell supertest to send a GET request to the / path.\n.expect(200, 'Hello World!') And finally, here we make sure that the response status is 200 and the body is exacly Hello World!.\nSupertest is very helpful library, it allows us to verify different behaviours of our application like:\nThe endpoint should return a 500 error:\n.expect(500) The endpoint should return a object:\n.expect(200, { lorem: 'ipsum' }) And many others. You can know more about supertest here.\n Continue reading: Node.js testing - Database\n",
-  "wordCount" : "521",
+  "articleBody": "All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me.\nAs example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require('express') const app = express() const port = 3000 app.get('/', (req, res) = { res.send('Hello World!') }) app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \"name\": \"testing\", \"version\": \"1.0.0\", \"main\": \"index.js\", \"license\": \"MIT\", \"dependencies\": { \"express\": \"^4.17.2\" }, \"scripts\": { \"start\": \"node index.js\" } } For the test framework, we are going to use Jest. So, let’s install it using the command:\nnpm install jest ---save-dev And now, we can write our first test:\ntest/app.test.js:\nit('should say hello world', () = { console.log('Hello World!') }) And now we can finally run our first test using the command:\nnpx jest You should see something similar on the terminal if everything ran smoothly:\n➜ npx jest console.log Hello World! at Object. (test/app.test.js:2:11) PASS ./test/app.test.js ✓ should say hello world (18 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.302 s, estimated 1 s Ran all test suites. To actually send requests to our express application, we are going to use supertest. Supertest provide us lots of functions to make our life easier. Let’s go ahead and install it using:\nnpm install supertest --save-dev In order to test our application, we need to move some of the express app creation logic into a file we can we can import from the test file:\nindex.js:\nconst createApp = require('./src/createApp') const app = createApp() const port = 3000 app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) src/createApp.js:\nconst express = require('express') module.exports = () = { const app = express() app.get('/', (req, res) = { res.send('Hello World!') }) return app } Now that we have all set, we can test our Hello World endpoint:\ntest/app.test.js:\nconst request = require('supertest') const createApp = require('../src/createApp') it('should say hello world', async () = { await request(createApp()) .get('/') .expect(200, 'Hello World!') }) If everything went well, you should see something like this on the terminal:\n➜ testing npx jest PASS ./test/app.test.js ✓ should say hello world (31 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.726 s, estimated 1 s Ran all test suites. That’s it! We successfully ran our first express test. Before we finish this first part, lets break down what is happening:\nawait request(createApp()) Here, we create a instance of out app and pass it to supertest. Supertest does all the heavy work of binding our application to a specific port and make sure each request goes to the right place.\n.get('/') Here, we tell supertest to send a GET request to the / path.\n.expect(200, 'Hello World!') And finally, here we make sure that the response status is 200 and the body is exacly Hello World!.\nSupertest is very helpful library, it allows us to verify different behaviours of our application like:\nThe endpoint should return a 500 error:\n.expect(500) The endpoint should return a object:\n.expect(200, { lorem: 'ipsum' }) And many others. You can know more about supertest here.\n Continue reading: Node.js testing - Database\n",
+  "wordCount" : "595",
   "inLanguage": "en",
   "datePublished": "2022-02-02T21:23:50-04:00",
   "dateModified": "2022-02-02T21:23:50-04:00",
@@ -189,7 +180,11 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
 
 </div>
   </header> 
-  <div class="post-content"><p>As example, we are going to start with this basic <code>hello world</code> application:</p>
+  <div class="post-content"><p>All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage
+our productivity and the quality of what we write. That being said, in this series of articles, we will
+be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services.
+In this first part, we are going to see how to test express endpoints, come with me.</p>
+<p>As example, we are going to start with this basic <code>hello world</code> application:</p>
 <p>index.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
 <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
@@ -225,7 +220,7 @@ using the command:</p>
 })
 </code></pre></div><p>And now we can finally run our first test using the command:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npx jest
-</code></pre></div><p>You should see something similar on the terminal, if everything run smoothly:</p>
+</code></pre></div><p>You should see something similar on the terminal if everything ran smoothly:</p>
 <pre tabindex="0"><code>➜  npx jest
   console.log
     Hello World!
@@ -240,7 +235,7 @@ Tests:       1 passed, 1 total
 Snapshots:   0 total
 Time:        0.302 s, estimated 1 s
 Ran all test suites.
-</code></pre><p>To actually send requests to out express application, we are going
+</code></pre><p>To actually send requests to our express application, we are going
 to use supertest. Supertest provide us lots of functions to make our life easier.
 Let&rsquo;s go ahead and install it using:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npm install supertest --save-dev
