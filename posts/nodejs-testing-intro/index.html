@@ -12,15 +12,15 @@ index.js:
 const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
 { &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest.">
 <meta name="author" content="">
-<link rel="canonical" href="http://example.org/posts/nodejs-testing-intro/" />
+<link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
 <script defer crossorigin="anonymous" src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
-<link rel="icon" href="http://example.org/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://example.org/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://example.org/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://example.org/apple-touch-icon.png">
-<link rel="mask-icon" href="http://example.org/safari-pinned-tab.svg">
+<link rel="icon" href="https://cesarzagonel.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://cesarzagonel.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://cesarzagonel.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://cesarzagonel.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://cesarzagonel.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <meta name="generator" content="Hugo 0.92.1" />
@@ -66,7 +66,7 @@ index.js:
 const express = require(&#39;express&#39;) const app = express() const port = 3000 app.get(&#39;/&#39;, (req, res) =&gt; { res.send(&#39;Hello World!&#39;) }) app.listen(port, () =&gt; { console.log(`Example app listening at http://localhost:${port}`) }) package.json:
 { &#34;name&#34;: &#34;testing&#34;, &#34;version&#34;: &#34;1.0.0&#34;, &#34;main&#34;: &#34;index.js&#34;, &#34;license&#34;: &#34;MIT&#34;, &#34;dependencies&#34;: { &#34;express&#34;: &#34;^4.17.2&#34; }, &#34;scripts&#34;: { &#34;start&#34;: &#34;node index.js&#34; } } For the test framework, we are going to use Jest." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://example.org/posts/nodejs-testing-intro/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-02-02T21:23:50-04:00" />
 <meta property="article:modified_time" content="2022-02-02T21:23:50-04:00" />
 
@@ -87,13 +87,13 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
       "@type": "ListItem",
       "position":  1 ,
       "name": "Posts",
-      "item": "http://example.org/posts/"
+      "item": "https://cesarzagonel.github.io/posts/"
     }, 
     {
       "@type": "ListItem",
       "position":  2 ,
       "name": "Node.js testing - Intro",
-      "item": "http://example.org/posts/nodejs-testing-intro/"
+      "item": "https://cesarzagonel.github.io/posts/nodejs-testing-intro/"
     }
   ]
 }
@@ -115,14 +115,14 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
   "dateModified": "2022-02-02T21:23:50-04:00",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "http://example.org/posts/nodejs-testing-intro/"
+    "@id": "https://cesarzagonel.github.io/posts/nodejs-testing-intro/"
   },
   "publisher": {
     "@type": "Organization",
     "name": "Cesar Zagonel",
     "logo": {
       "@type": "ImageObject",
-      "url": "http://example.org/favicon.ico"
+      "url": "https://cesarzagonel.github.io/favicon.ico"
     }
   }
 }
@@ -144,7 +144,7 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://example.org/" accesskey="h" title="Cesar Zagonel (Alt + H)">Cesar Zagonel</a>
+            <a href="https://cesarzagonel.github.io/" accesskey="h" title="Cesar Zagonel (Alt + H)">Cesar Zagonel</a>
             <span class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -170,7 +170,7 @@ const express = require(&#39;express&#39;) const app = express() const port = 30
         </div>
         <ul id="menu">
             <li>
-                <a href="http://example.org/archives" title="Archive">
+                <a href="https://cesarzagonel.github.io/archives" title="Archive">
                     <span>Archive</span>
                 </a>
             </li>
@@ -319,7 +319,7 @@ application like:</p>
     </main>
     
 <footer class="footer">
-    <span>&copy; 2022 <a href="http://example.org/">Cesar Zagonel</a></span>
+    <span>&copy; 2022 <a href="https://cesarzagonel.github.io/">Cesar Zagonel</a></span>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &

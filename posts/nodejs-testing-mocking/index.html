@@ -9,15 +9,15 @@
 <meta name="keywords" content="" />
 <meta name="description" content="On the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let&rsquo;s say that we have function A that happens to call function B but we don&rsquo;t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let&rsquo;s say we have the following situation:">
 <meta name="author" content="">
-<link rel="canonical" href="http://example.org/posts/nodejs-testing-mocking/" />
+<link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-mocking/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
 <script defer crossorigin="anonymous" src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
-<link rel="icon" href="http://example.org/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://example.org/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://example.org/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://example.org/apple-touch-icon.png">
-<link rel="mask-icon" href="http://example.org/safari-pinned-tab.svg">
+<link rel="icon" href="https://cesarzagonel.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://cesarzagonel.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://cesarzagonel.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://cesarzagonel.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://cesarzagonel.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <meta name="generator" content="Hugo 0.92.1" />
@@ -60,7 +60,7 @@
 </noscript><meta property="og:title" content="Node.js testing - Mocking" />
 <meta property="og:description" content="On the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let&rsquo;s say that we have function A that happens to call function B but we don&rsquo;t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let&rsquo;s say we have the following situation:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://example.org/posts/nodejs-testing-mocking/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://cesarzagonel.github.io/posts/nodejs-testing-mocking/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-02-03T23:09:08-04:00" />
 <meta property="article:modified_time" content="2022-02-03T23:09:08-04:00" />
 
@@ -78,13 +78,13 @@
       "@type": "ListItem",
       "position":  1 ,
       "name": "Posts",
-      "item": "http://example.org/posts/"
+      "item": "https://cesarzagonel.github.io/posts/"
     }, 
     {
       "@type": "ListItem",
       "position":  2 ,
       "name": "Node.js testing - Mocking",
-      "item": "http://example.org/posts/nodejs-testing-mocking/"
+      "item": "https://cesarzagonel.github.io/posts/nodejs-testing-mocking/"
     }
   ]
 }
@@ -106,14 +106,14 @@
   "dateModified": "2022-02-03T23:09:08-04:00",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "http://example.org/posts/nodejs-testing-mocking/"
+    "@id": "https://cesarzagonel.github.io/posts/nodejs-testing-mocking/"
   },
   "publisher": {
     "@type": "Organization",
     "name": "Cesar Zagonel",
     "logo": {
       "@type": "ImageObject",
-      "url": "http://example.org/favicon.ico"
+      "url": "https://cesarzagonel.github.io/favicon.ico"
     }
   }
 }
@@ -135,7 +135,7 @@
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://example.org/" accesskey="h" title="Cesar Zagonel (Alt + H)">Cesar Zagonel</a>
+            <a href="https://cesarzagonel.github.io/" accesskey="h" title="Cesar Zagonel (Alt + H)">Cesar Zagonel</a>
             <span class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -161,7 +161,7 @@
         </div>
         <ul id="menu">
             <li>
-                <a href="http://example.org/archives" title="Archive">
+                <a href="https://cesarzagonel.github.io/archives" title="Archive">
                     <span>Archive</span>
                 </a>
             </li>
@@ -282,7 +282,7 @@ You can see all the verification functions jest have <a href="https://jestjs.io/
     </main>
     
 <footer class="footer">
-    <span>&copy; 2022 <a href="http://example.org/">Cesar Zagonel</a></span>
+    <span>&copy; 2022 <a href="https://cesarzagonel.github.io/">Cesar Zagonel</a></span>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
