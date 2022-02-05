@@ -226,14 +226,14 @@ In this first part, we are going to see how to test express endpoints, come with
 }
 </code></pre></div><p>For the test framework, we are going to use Jest. So, let&rsquo;s install it
 using the command:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npm install jest ---save-dev
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">npm install jest ---save-dev
 </code></pre></div><p>And now, we can write our first test:</p>
 <p>test/app.test.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, () =&gt; {
   <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
 })
 </code></pre></div><p>And now we can finally run our first test using the command:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npx jest
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">npx jest
 </code></pre></div><p>You should see something similar on the terminal if everything ran smoothly:</p>
 <pre tabindex="0"><code>➜  npx jest
   console.log
@@ -252,7 +252,7 @@ Ran all test suites.
 </code></pre><p>To actually send requests to our express application, we are going
 to use supertest. Supertest provide us lots of functions to make our life easier.
 Let&rsquo;s go ahead and install it using:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">npm install supertest --save-dev
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">npm install supertest --save-dev
 </code></pre></div><p>In order to test our application, we need to move some of the express app
 creation logic into a file we can we can import from the test file:</p>
 <p>index.js:</p>
