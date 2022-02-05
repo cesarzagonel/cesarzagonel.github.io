@@ -60,7 +60,18 @@ app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query(
         }
 
     </style>
-</noscript><meta property="og:title" content="Node.js testing - Database" />
+</noscript>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FRSY6TDX04"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-FRSY6TDX04', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="Node.js testing - Database" />
 <meta property="og:description" content="Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
 Lets pretend we have a endpoint that creates pets:
 src/createApp.js:
