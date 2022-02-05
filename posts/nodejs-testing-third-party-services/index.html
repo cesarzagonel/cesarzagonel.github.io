@@ -110,8 +110,8 @@ if (!doNotTrack) {
   "keywords": [
     
   ],
-  "articleBody": "Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.\nLets pretend we have a endpoint that creates pets:\nsrc/createApp.js:\napp.post('/pets', async (req, res) = { const pet = await pool.query( 'insert into pets (name) values ($1) returning *', [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:\nsrc/createApp.js:\nconst db = new Client() await db.connect() await db.query( 'create table if not exists pets (id serial primary key, name varchar(255))' ) Note: Client uses the default configuration for connecting.\nWe also need to use the json body parser, so we can send json objects to our application:\nsrc/createApp.js:\napp.use(bodyParser.json()) We finally, we are going to return a object so we can access the db connection, express app and also stop our application:\nsrc/createApp.js:\nreturn { db, express: app, stop: () = db.end() } Great! So, now, we are going to create our test case file. This file will help us setting up things, so we don’t need to repeat it every time.\ntest/appTestCase.js:\nconst createApp = require('../src/createApp') let app beforeAll(async () = { app = await createApp() global.app = app }) afterAll(async () = { await app.stop() }) Now, we can require our test test case file:\ntest/app.test.js:\nrequire('./appTestCase') And modify our test case to use our new application object:\ntest/app.test.js:\nit('should say hello world', async () = { await request(app.express) .get('/') .expect(200, 'Hello World!') }) Finally, we can create the test for our pets endpoint:\ntest/app.test.js:\nit('should create pet', async () = { await request(app.express) .post('/pets') .send({ name: 'Fluffy' }) .expect(200) const result = await app.db.query(\"select * from pets where name = 'Fluffy'\") expect(result.rows.length).toBe(1) }) And, as you expect, if we run npx jest, all the tests should successfully run. But, if we run npx jest again, we should see something like:\n$ npx jest FAIL test/app.test.js ✓ should say hello world (19 ms) ✕ should create pet (24 ms)  ● should create pet  expect(received).toBe(expected) // Object.is equality  Expected: 1 Received: 2  16 | 17 | const result = await app.db.query(\"select * from pets where name = 'Fluffy'\")  18 | expect(result.rows.length).toBe(1) | ^ 19 | }) 20 | The problem here is that the db changes are persisted between each test run. Ideally, we want to have total isolation between tests. This means that each test run, should receive a fresh copy of the database. We can solve this issue in a couple of manners.\n  Delete and recreate the whole database between test runs. This can work, but as our application grows, it starts to get slow to delete and re-create the whole database (specially if we have lots of migrations).\n  Delete all rows from all tables between test runs. This can also work, but this maybe not straightforward like in case we have constraints, for example.\n  Run each test inside a transaction and rollback at the end. This is the approach I like most. It’s what most of the backend frameworks do. It’s fast and straightforward and requires little to no change to the code.\n  So, lets implement the third option:\ntest/appTestCase.js:\nbeforeEach(async () = { await app.db.query('begin') }) afterEach(async () = { await app.db.query('rollback') }) Quick and simple! Now, if we delete and recreate our database, we should be able to run out test suite multiple times, without issues:\n$ npx jest PASS test/app.test.js ✓ should say hello world (21 ms) ✓ should create pet (19 ms) Test Suites: 1 passed, 1 total Tests: 2 passed, 2 total Snapshots: 0 total Time: 0.636 s, estimated 1 s Ran all test suites. $ npx jest PASS test/app.test.js ✓ should say hello world (20 ms) ✓ should create pet (19 ms) Test Suites: 1 passed, 1 total Tests: 2 passed, 2 total Snapshots: 0 total Time: 0.61 s, estimated 1 s Ran all test suites.  Continue reading: Node.js testing - Mocking\n",
-  "wordCount" : "664",
+  "articleBody": "Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.\nLets pretend we have a endpoint that creates pets:\nsrc/createApp.js:\napp.post('/pets', async (req, res) = { const pet = await pool.query( 'insert into pets (name) values ($1) returning *', [req.body.name] ) res.send(pet) })Often we need to test a piece of code that access a third party service. In that case, we dont want to depend on a third party service being online so we can run our tests. Even if the third party service is online, we still don't want to rely on it because our inernet connection maybe slow or the service maybe not fast enough for testing porposes. Also, we always want our tests to run as fast as possible so we don't disencourage our developers to run the tests constantly. For all those purposes, we have a perfect tool: mocking. Image that we have an endpoint on our application that fetches Star Wars characters like this: ```javascript app.get('/characters/:id', async (req, res) = { const { id } = req.params const result = await axios.get(`https://swapi.dev/api/people/${id}`)  res.send(result.data) }) And, the respective test like this:\nit('should fetch character', async () = { const response = await request(app.express) .get('/characters/1') .expect(200) expect(response.body).toMatchObject({ name: 'Luke Skywalker', height: '172', mass: '77', hair_color: 'blond', skin_color: 'fair', eye_color: 'blue', birth_year: '19BBY', gender: 'male' }) }) So far so good. But, let’s pretend that we got no internet, let’s try running our tests:\n$ npx jest FAIL test/app.test.js ✓ should say hello world (19 ms) ✓ should create pet (23 ms) ✕ should fetch character (20 ms)  ● should fetch character  expected 200 \"OK\", got 500 \"Internal Server Error\"  22 | const response = await request(app.express) 23 | .get('/characters/1')  24 | .expect(200) | ^ 25 | 26 | expect(response.body).toMatchObject({ 27 | name: 'Luke Skywalker',  at Object. (test/app.test.js:24:6) ... As expect, we were unnable to run our tests. Luckly, we can get around this. The axios-mock-adapter helps us mock responses. Mocking is basically replicating an specifig behavior. So, by mocking the response, we are replicating the third party service behaviour. Let’s see how it looks like moking a request using axios-mock-adapter.\nit('should fetch character', async () = { const mock = new MockAdapter(axios) mock.onGet('https://swapi.dev/api/people/1').reply(200, { name: 'Luke Skywalker', height: '172', mass: '77', hair_color: 'blond', skin_color: 'fair', eye_color: 'blue', birth_year: '19BBY', gender: 'male' }) const response = await request(app.express) .get('/characters/1') .expect(200) expect(response.body).toMatchObject({ name: 'Luke Skywalker', height: '172', mass: '77', hair_color: 'blond', skin_color: 'fair', eye_color: 'blue', birth_year: '19BBY', gender: 'male' }) }) And, if we try to run our tests again, we should see all them succeeding, even if we have no internet or the service is unavailable:\n$ npx jest PASS test/app.test.js ✓ should say hello world (10 ms) ✓ should create pet (13 ms) ✓ should fetch character (3 ms) Test Suites: 1 passed, 1 total Tests: 3 passed, 3 total Snapshots: 0 total Time: 0.338 s, estimated 1 s Ran all test suites.  Continue reading: Node.js testing - Mocking\n",
+  "wordCount" : "516",
   "inLanguage": "en",
   "datePublished": "2022-02-02T21:24:03-04:00",
   "dateModified": "2022-02-02T21:24:03-04:00",
@@ -206,136 +206,104 @@ with our database.</p>
   )
 
   <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">pet</span>)
-})
-</code></pre></div><p>Firstly, we need to connect to the db and create our pets table:</p>
-<p>src/createApp.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">db</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Client</span>()
-<span style="color:#66d9ef">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">connect</span>()
+})<span style="color:#a6e22e">Often</span> <span style="color:#a6e22e">we</span> <span style="color:#a6e22e">need</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">test</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">piece</span> <span style="color:#66d9ef">of</span> <span style="color:#a6e22e">code</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">access</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">third</span> <span style="color:#a6e22e">party</span> <span style="color:#a6e22e">service</span>. <span style="color:#a6e22e">In</span> <span style="color:#a6e22e">that</span> <span style="color:#66d9ef">case</span>, <span style="color:#a6e22e">we</span> <span style="color:#a6e22e">dont</span> <span style="color:#a6e22e">want</span> <span style="color:#a6e22e">to</span>
+<span style="color:#a6e22e">depend</span> <span style="color:#a6e22e">on</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">third</span> <span style="color:#a6e22e">party</span> <span style="color:#a6e22e">service</span> <span style="color:#a6e22e">being</span> <span style="color:#a6e22e">online</span> <span style="color:#a6e22e">so</span> <span style="color:#a6e22e">we</span> <span style="color:#a6e22e">can</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">our</span> <span style="color:#a6e22e">tests</span>. <span style="color:#a6e22e">Even</span> <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">third</span> <span style="color:#a6e22e">party</span> <span style="color:#a6e22e">service</span>
+<span style="color:#a6e22e">is</span> <span style="color:#a6e22e">online</span>, <span style="color:#a6e22e">we</span> <span style="color:#a6e22e">still</span> <span style="color:#a6e22e">don</span><span style="color:#e6db74">&#39;t want to rely on it because our inernet connection maybe slow or the
+</span><span style="color:#e6db74">service maybe not fast enough for testing porposes. Also, we always want our tests to run as fast as
+</span><span style="color:#e6db74">possible so we don&#39;</span><span style="color:#a6e22e">t</span> <span style="color:#a6e22e">disencourage</span> <span style="color:#a6e22e">our</span> <span style="color:#a6e22e">developers</span> <span style="color:#a6e22e">to</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">the</span> <span style="color:#a6e22e">tests</span> <span style="color:#a6e22e">constantly</span>. <span style="color:#a6e22e">For</span> <span style="color:#a6e22e">all</span> <span style="color:#a6e22e">those</span> <span style="color:#a6e22e">purposes</span>,
+<span style="color:#a6e22e">we</span> <span style="color:#a6e22e">have</span> <span style="color:#a6e22e">a</span> <span style="color:#a6e22e">perfect</span> <span style="color:#a6e22e">tool</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">mocking</span>.
 
-<span style="color:#66d9ef">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(
-  <span style="color:#e6db74">&#39;create table if not exists pets (id serial primary key, name varchar(255))&#39;</span>
-)
-</code></pre></div><p>Note: <code>Client</code> uses the default configuration for connecting.</p>
-<p>We also need to use the json body parser, so we can send json objects
-to our application:</p>
-<p>src/createApp.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">bodyParser</span>.<span style="color:#a6e22e">json</span>())
-</code></pre></div><p>We finally, we are going to return a object so we can access the db connection,
-express app and also stop our application:</p>
-<p>src/createApp.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">return</span> {
-  <span style="color:#a6e22e">db</span>,
-  <span style="color:#a6e22e">express</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">app</span>,
-  <span style="color:#a6e22e">stop</span><span style="color:#f92672">:</span> () =&gt; <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">end</span>()
-}
-</code></pre></div><p>Great! So, now, we are going to create our test case file. This file will
-help us setting up things, so we don&rsquo;t need to repeat it every time.</p>
-<p>test/appTestCase.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/createApp&#39;</span>)
+<span style="color:#a6e22e">Image</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">we</span> <span style="color:#a6e22e">have</span> <span style="color:#a6e22e">an</span> <span style="color:#a6e22e">endpoint</span> <span style="color:#a6e22e">on</span> <span style="color:#a6e22e">our</span> <span style="color:#a6e22e">application</span> <span style="color:#a6e22e">that</span> <span style="color:#a6e22e">fetches</span> <span style="color:#a6e22e">Star</span> <span style="color:#a6e22e">Wars</span> <span style="color:#a6e22e">characters</span> <span style="color:#a6e22e">like</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">:</span>
 
-<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">app</span>
-<span style="color:#a6e22e">beforeAll</span>(<span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">createApp</span>()
-  <span style="color:#a6e22e">global</span>.<span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">app</span>
+<span style="color:#e6db74">```javascript
+</span><span style="color:#e6db74">app.get(&#39;/characters/:id&#39;, async (req, res) =&gt; {
+</span><span style="color:#e6db74">  const { id } = req.params
+</span><span style="color:#e6db74">  const result = await axios.get(`</span><span style="color:#a6e22e">https</span><span style="color:#f92672">:</span><span style="color:#75715e">//swapi.dev/api/people/${id}`)
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">data</span>)
 })
-
-<span style="color:#a6e22e">afterAll</span>(<span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">stop</span>()
-})
-</code></pre></div><p>Now, we can require our test test case file:</p>
-<p>test/app.test.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./appTestCase&#39;</span>)
-</code></pre></div><p>And modify our test case to use our new application object:</p>
-<p>test/app.test.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">express</span>)
-    .<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
-    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
-})
-</code></pre></div><p>Finally, we can create the test for our pets endpoint:</p>
-<p>test/app.test.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should create pet&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">express</span>)
-    .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/pets&#39;</span>)
-    .<span style="color:#a6e22e">send</span>({ <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Fluffy&#39;</span> })
+</code></pre></div><p>And, the respective test like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should fetch character&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">express</span>)
+    .<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/characters/1&#39;</span>)
     .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>)
 
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">&#34;select * from pets where name = &#39;Fluffy&#39;&#34;</span>)
-  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">length</span>).<span style="color:#a6e22e">toBe</span>(<span style="color:#ae81ff">1</span>)
+  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">body</span>).<span style="color:#a6e22e">toMatchObject</span>({
+    <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Luke Skywalker&#39;</span>,
+    <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;172&#39;</span>,
+    <span style="color:#a6e22e">mass</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;77&#39;</span>,
+    <span style="color:#a6e22e">hair_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;blond&#39;</span>,
+    <span style="color:#a6e22e">skin_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;fair&#39;</span>,
+    <span style="color:#a6e22e">eye_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;blue&#39;</span>,
+    <span style="color:#a6e22e">birth_year</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;19BBY&#39;</span>,
+    <span style="color:#a6e22e">gender</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;male&#39;</span>
+  })
 })
-</code></pre></div><p>And, as you expect, if we run <code>npx jest</code>, all the tests should successfully run.
-But, if we run <code>npx jest</code> again, we should see something like:</p>
+</code></pre></div><p>So far so good. But, let&rsquo;s pretend that we got no internet, let&rsquo;s try running our tests:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest
  FAIL  test/app.test.js
   ✓ should say hello world (19 ms)
-  ✕ should create pet (24 ms)
+  ✓ should create pet (23 ms)
+  ✕ should fetch character (20 ms)
 <span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>  ● should create pet
+</span><span style="color:#960050;background-color:#1e0010"></span>  ● should fetch character
 <span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>    expect(received).toBe(expected) // Object.is equality
+</span><span style="color:#960050;background-color:#1e0010"></span>    expected 200 &#34;OK&#34;, got 500 &#34;Internal Server Error&#34;
 <span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>    Expected: 1
-    Received: 2
+</span><span style="color:#960050;background-color:#1e0010"></span>      22 |   const response = await request(app.express)
+      23 |     .get(&#39;/characters/1&#39;)
+    &gt; 24 |     .expect(200)
+         |      ^
+      25 |
+      26 |   expect(response.body).toMatchObject({
+      27 |     name: &#39;Luke Skywalker&#39;,
 <span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>      16 |
-      17 |   const result = await app.db.query(&#34;select * from pets where name = &#39;Fluffy&#39;&#34;)
-    &gt; 18 |   expect(result.rows.length).toBe(1)
-         |                              ^
-      19 | })
-      20 |
-</code></pre></div><p>The problem here is that the db changes are persisted between each test run.
-Ideally, we want to have total isolation between tests. This means that
-each test run, should receive a fresh copy of the database.
-We can solve this issue in a couple of manners.</p>
-<ol>
-<li>
-<p>Delete and recreate the whole database between test runs.
-This can work, but as our application grows, it starts to get slow
-to delete and re-create the whole database (specially if we have lots
-of migrations).</p>
-</li>
-<li>
-<p>Delete all rows from all tables between test runs.
-This can also work, but this maybe not straightforward like in case
-we have constraints, for example.</p>
-</li>
-<li>
-<p>Run each test inside a transaction and rollback at the end.
-This is the approach I like most. It&rsquo;s what most of the backend frameworks do.
-It&rsquo;s fast and straightforward and requires little to no change to the code.</p>
-</li>
-</ol>
-<p>So, lets implement the third option:</p>
-<p>test/appTestCase.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">beforeEach</span>(<span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">&#39;begin&#39;</span>)
-})
+</span><span style="color:#960050;background-color:#1e0010"></span>      at Object.&lt;anonymous&gt; (test/app.test.js:24:6)
+      ...
+</code></pre></div><p>As expect, we were unnable to run our tests. Luckly, we can get around this.
+The <code>axios-mock-adapter</code> helps us <em>mock</em> responses. Mocking is basically replicating an
+specifig behavior. So, by mocking the response, we are replicating the third party service
+behaviour. Let&rsquo;s see how it looks like moking a request using <code>axios-mock-adapter</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should fetch character&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">mock</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">MockAdapter</span>(<span style="color:#a6e22e">axios</span>)
 
-<span style="color:#a6e22e">afterEach</span>(<span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">&#39;rollback&#39;</span>)
+  <span style="color:#a6e22e">mock</span>.<span style="color:#a6e22e">onGet</span>(<span style="color:#e6db74">&#39;https://swapi.dev/api/people/1&#39;</span>).<span style="color:#a6e22e">reply</span>(<span style="color:#ae81ff">200</span>, {
+    <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Luke Skywalker&#39;</span>,
+    <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;172&#39;</span>,
+    <span style="color:#a6e22e">mass</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;77&#39;</span>,
+    <span style="color:#a6e22e">hair_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;blond&#39;</span>,
+    <span style="color:#a6e22e">skin_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;fair&#39;</span>,
+    <span style="color:#a6e22e">eye_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;blue&#39;</span>,
+    <span style="color:#a6e22e">birth_year</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;19BBY&#39;</span>,
+    <span style="color:#a6e22e">gender</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;male&#39;</span>
+  })
+
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">express</span>)
+    .<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/characters/1&#39;</span>)
+    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>)
+
+  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">body</span>).<span style="color:#a6e22e">toMatchObject</span>({
+    <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Luke Skywalker&#39;</span>,
+    <span style="color:#a6e22e">height</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;172&#39;</span>,
+    <span style="color:#a6e22e">mass</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;77&#39;</span>,
+    <span style="color:#a6e22e">hair_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;blond&#39;</span>,
+    <span style="color:#a6e22e">skin_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;fair&#39;</span>,
+    <span style="color:#a6e22e">eye_color</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;blue&#39;</span>,
+    <span style="color:#a6e22e">birth_year</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;19BBY&#39;</span>,
+    <span style="color:#a6e22e">gender</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;male&#39;</span>
+  })
 })
-</code></pre></div><p>Quick and simple! Now, if we delete and recreate our database, we should be able
-to run out test suite multiple times, without issues:</p>
+</code></pre></div><p>And, if we try to run our tests again, we should see all them succeeding, even if
+we have no internet or the service is unavailable:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest
  PASS  test/app.test.js
-  ✓ should say hello world (21 ms)
-  ✓ should create pet (19 ms)
+  ✓ should say hello world (10 ms)
+  ✓ should create pet (13 ms)
+  ✓ should fetch character (3 ms)
 <span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span>Test Suites: 1 passed, 1 total
-Tests:       2 passed, 2 total
+Tests:       3 passed, 3 total
 Snapshots:   0 total
-Time:        0.636 s, estimated 1 s
-Ran all test suites.
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>$ npx jest
- PASS  test/app.test.js
-  ✓ should say hello world (20 ms)
-  ✓ should create pet (19 ms)
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Test Suites: 1 passed, 1 total
-Tests:       2 passed, 2 total
-Snapshots:   0 total
-Time:        0.61 s, estimated 1 s
+Time:        0.338 s, estimated 1 s
 Ran all test suites.
 </code></pre></div><p> </p>
 <p>Continue reading: <a href="/posts/nodejs-testing-mocking">Node.js testing - Mocking</a></p>
