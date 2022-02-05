@@ -13,7 +13,7 @@
       <pubDate>Thu, 03 Feb 2022 23:09:08 -0400</pubDate>
       
       <guid>https://cesarzagonel.github.io/posts/nodejs-testing-mocking/</guid>
-      <description>On the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let&amp;rsquo;s say that we have function A that happens to call function B but we don&amp;rsquo;t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let&amp;rsquo;s say we have the following situation:</description>
+      <description>Mocking functions.</description>
     </item>
     
     <item>
@@ -22,10 +22,7 @@
       <pubDate>Wed, 02 Feb 2022 21:24:03 -0400</pubDate>
       
       <guid>https://cesarzagonel.github.io/posts/nodejs-testing-third-party-services/</guid>
-      <description>Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
-Lets pretend we have a endpoint that creates pets:
-src/createApp.js:
-app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await pool.query( &amp;#39;insert into pets (name) values ($1) returning *&amp;#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:</description>
+      <description>Testing integration with third-party services.</description>
     </item>
     
     <item>
@@ -34,10 +31,7 @@ app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await
       <pubDate>Wed, 02 Feb 2022 21:23:54 -0400</pubDate>
       
       <guid>https://cesarzagonel.github.io/posts/nodejs-testing-database/</guid>
-      <description>Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
-Lets pretend we have a endpoint that creates pets:
-src/createApp.js:
-app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await pool.query( &amp;#39;insert into pets (name) values ($1) returning *&amp;#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:</description>
+      <description>Testing integration with postgres.</description>
     </item>
     
     <item>
@@ -46,7 +40,7 @@ app.post(&amp;#39;/pets&amp;#39;, async (req, res) =&amp;gt; { const pet = await
       <pubDate>Wed, 02 Feb 2022 21:23:50 -0400</pubDate>
       
       <guid>https://cesarzagonel.github.io/posts/nodejs-testing-intro/</guid>
-      <description>All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me.</description>
+      <description>Testing express applications using jest.</description>
     </item>
     
     

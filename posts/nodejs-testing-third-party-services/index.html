@@ -7,10 +7,7 @@
 <meta name="robots" content="index, follow">
 <title>Node.js testing - Third-party services | Cesar Zagonel</title>
 <meta name="keywords" content="" />
-<meta name="description" content="Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
-Lets pretend we have a endpoint that creates pets:
-src/createApp.js:
-app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query( &#39;insert into pets (name) values ($1) returning *&#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:">
+<meta name="description" content="Testing integration with third-party services.">
 <meta name="author" content="">
 <link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-third-party-services/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
@@ -60,7 +57,11 @@ app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query(
         }
 
     </style>
-</noscript>
+</noscript><meta
+  name="description"
+  content="Testing integration with third-party services."
+/>
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-FRSY6TDX04"></script>
 <script>
 var doNotTrack = false;
@@ -72,10 +73,7 @@ if (!doNotTrack) {
 }
 </script>
 <meta property="og:title" content="Node.js testing - Third-party services" />
-<meta property="og:description" content="Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
-Lets pretend we have a endpoint that creates pets:
-src/createApp.js:
-app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query( &#39;insert into pets (name) values ($1) returning *&#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:" />
+<meta property="og:description" content="Testing integration with third-party services." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://cesarzagonel.github.io/posts/nodejs-testing-third-party-services/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-02-02T21:24:03-04:00" />
@@ -83,10 +81,7 @@ app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query(
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Node.js testing - Third-party services"/>
-<meta name="twitter:description" content="Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
-Lets pretend we have a endpoint that creates pets:
-src/createApp.js:
-app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query( &#39;insert into pets (name) values ($1) returning *&#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:"/>
+<meta name="twitter:description" content="Testing integration with third-party services."/>
 
 
 <script type="application/ld+json">
@@ -115,7 +110,7 @@ app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query(
   "@type": "BlogPosting",
   "headline": "Node.js testing - Third-party services",
   "name": "Node.js testing - Third-party services",
-  "description": "Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.\nLets pretend we have a endpoint that creates pets:\nsrc/createApp.js:\napp.post(\u0026#39;/pets\u0026#39;, async (req, res) =\u0026gt; { const pet = await pool.query( \u0026#39;insert into pets (name) values ($1) returning *\u0026#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:",
+  "description": "Testing integration with third-party services.",
   "keywords": [
     
   ],
@@ -196,6 +191,9 @@ app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query(
     <h1 class="post-title">
       Node.js testing - Third-party services
     </h1>
+    <div class="post-description">
+      Testing integration with third-party services.
+    </div>
     <div class="post-meta"><span title='2022-02-02 21:24:03 -0400 -04'>February 2, 2022</span>
 
 </div>
