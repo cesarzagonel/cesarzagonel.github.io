@@ -152,7 +152,7 @@ if (!doNotTrack) {
     </h2>
   </header>
   <section class="entry-content">
-    <p>On the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let’s say that we have function A that happens to call function B but we don’t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let’s say we have the following situation:...</p>
+    <p>In the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let’s say that we have function A that happens to call function B but we don’t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let’s say we have the following situation:...</p>
   </section>
   <footer class="entry-footer"><span title='2022-02-03 23:09:08 -0400 -04'>February 3, 2022</span></footer>
   <a class="entry-link" aria-label="post link to Node.js testing - Mocking" href="https://cesarzagonel.github.io/posts/nodejs-testing-mocking/"></a>
@@ -164,7 +164,7 @@ if (!doNotTrack) {
     </h2>
   </header>
   <section class="entry-content">
-    <p>Often we need to test a piece of code that access a third party service. In that case, we dont want to depend on a third party service being online so we can run our tests. Even if the third party service is online, we still don’t want to rely on it because our inernet connection maybe slow or the service maybe not fast enough for testing porposes. Also, we always want our tests to run as fast as possible so we don’t disencourage our developers to run the tests constantly....</p>
+    <p>Often we need to test a piece of code that accesses a third-party service. In that case, we don’t want to depend on a third-party service that is online so we can run our tests. Even if the third-party service is online, we still don’t want to rely on it because our internet connection may be slow or the service may be not fast enough for testing purposes. Also, we always want our tests to run as fast as possible, so we don’t discourage our developers to run the tests constantly....</p>
   </section>
   <footer class="entry-footer"><span title='2022-02-02 21:24:03 -0400 -04'>February 2, 2022</span></footer>
   <a class="entry-link" aria-label="post link to Node.js testing - Third-party services" href="https://cesarzagonel.github.io/posts/nodejs-testing-third-party-services/"></a>
@@ -177,9 +177,9 @@ if (!doNotTrack) {
   </header>
   <section class="entry-content">
     <p>Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.
-Lets pretend we have a endpoint that creates pets:
+Let’s pretend we have an endpoint that creates pets:
 src/createApp.js:
-app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query( &#39;insert into pets (name) values ($1) returning *&#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:...</p>
+app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query( &#39;insert into pets (name) values ($1) returning *&#39;, [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the DB and create our pets table:...</p>
   </section>
   <footer class="entry-footer"><span title='2022-02-02 21:23:54 -0400 -04'>February 2, 2022</span></footer>
   <a class="entry-link" aria-label="post link to Node.js testing - Database" href="https://cesarzagonel.github.io/posts/nodejs-testing-database/"></a>
@@ -191,7 +191,7 @@ app.post(&#39;/pets&#39;, async (req, res) =&gt; { const pet = await pool.query(
     </h2>
   </header>
   <section class="entry-content">
-    <p>All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like api endpoints, integration with databases and third party services. In this first part, we are going to see how to test express endpoints, come with me....</p>
+    <p>All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like API endpoints, integration with databases, and third-party services. In this first part, we are going to see how to test express endpoints, come with me....</p>
   </section>
   <footer class="entry-footer"><span title='2022-02-02 21:23:50 -0400 -04'>February 2, 2022</span></footer>
   <a class="entry-link" aria-label="post link to Node.js testing - Intro" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/"></a>

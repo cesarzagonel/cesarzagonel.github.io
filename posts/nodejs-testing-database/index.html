@@ -110,8 +110,8 @@ if (!doNotTrack) {
   "keywords": [
     
   ],
-  "articleBody": "Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.\nLets pretend we have a endpoint that creates pets:\nsrc/createApp.js:\napp.post('/pets', async (req, res) = { const pet = await pool.query( 'insert into pets (name) values ($1) returning *', [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the db and create our pets table:\nsrc/createApp.js:\nconst db = new Client() await db.connect() await db.query( 'create table if not exists pets (id serial primary key, name varchar(255))' ) Note: Client uses the default configuration for connecting.\nWe also need to use the json body parser, so we can send json objects to our application:\nsrc/createApp.js:\napp.use(bodyParser.json()) We finally, we are going to return a object so we can access the db connection, express app and also stop our application:\nsrc/createApp.js:\nreturn { db, express: app, stop: () = db.end() } Great! So, now, we are going to create our test case file. This file will help us setting up things, so we don’t need to repeat it every time.\ntest/appTestCase.js:\nconst createApp = require('../src/createApp') let app beforeAll(async () = { app = await createApp() global.app = app }) afterAll(async () = { await app.stop() }) Now, we can require our test test case file:\ntest/app.test.js:\nrequire('./appTestCase') And modify our test case to use our new application object:\ntest/app.test.js:\nit('should say hello world', async () = { await request(app.express) .get('/') .expect(200, 'Hello World!') }) Finally, we can create the test for our pets endpoint:\ntest/app.test.js:\nit('should create pet', async () = { await request(app.express) .post('/pets') .send({ name: 'Fluffy' }) .expect(200) const result = await app.db.query(\"select * from pets where name = 'Fluffy'\") expect(result.rows.length).toBe(1) }) And, as you expect, if we run npx jest, all the tests should successfully run. But, if we run npx jest again, we should see something like:\n$ npx jest FAIL test/app.test.js ✓ should say hello world (19 ms) ✕ should create pet (24 ms)  ● should create pet  expect(received).toBe(expected) // Object.is equality  Expected: 1 Received: 2  16 | 17 | const result = await app.db.query(\"select * from pets where name = 'Fluffy'\")  18 | expect(result.rows.length).toBe(1) | ^ 19 | }) 20 | The problem here is that the db changes are persisted between each test run. Ideally, we want to have total isolation between tests. This means that each test run, should receive a fresh copy of the database. We can solve this issue in a couple of manners.\n  Delete and recreate the whole database between test runs. This can work, but as our application grows, it starts to get slow to delete and re-create the whole database (specially if we have lots of migrations).\n  Delete all rows from all tables between test runs. This can also work, but this maybe not straightforward like in case we have constraints, for example.\n  Run each test inside a transaction and rollback at the end. This is the approach I like most. It’s what most of the backend frameworks do. It’s fast and straightforward and requires little to no change to the code.\n  So, lets implement the third option:\ntest/appTestCase.js:\nbeforeEach(async () = { await app.db.query('begin') }) afterEach(async () = { await app.db.query('rollback') }) Quick and simple! Now, if we delete and recreate our database, we should be able to run out test suite multiple times, without issues:\n$ npx jest PASS test/app.test.js ✓ should say hello world (21 ms) ✓ should create pet (19 ms) Test Suites: 1 passed, 1 total Tests: 2 passed, 2 total Snapshots: 0 total Time: 0.636 s, estimated 1 s Ran all test suites. $ npx jest PASS test/app.test.js ✓ should say hello world (20 ms) ✓ should create pet (19 ms) Test Suites: 1 passed, 1 total Tests: 2 passed, 2 total Snapshots: 0 total Time: 0.61 s, estimated 1 s Ran all test suites.  Continue reading: Node.js testing - Third-party services\n",
-  "wordCount" : "665",
+  "articleBody": "Sometimes, the code that we want to test reads or writes to a database. In that case, we need a little more setup to be able to test the integration with our database.\nLet’s pretend we have an endpoint that creates pets:\nsrc/createApp.js:\napp.post('/pets', async (req, res) = { const pet = await pool.query( 'insert into pets (name) values ($1) returning *', [req.body.name] ) res.send(pet) }) Firstly, we need to connect to the DB and create our pets table:\nsrc/createApp.js:\nconst db = new Client() await db.connect() await db.query( 'create table if not exists pets (id serial primary key, name varchar(255))' ) Note: Client uses the default configuration for connecting.\nWe also need to use the JSON body parser, so we can send JSON objects to our application:\nsrc/createApp.js:\napp.use(bodyParser.json()) Finally, we are going to return an object so we can access the DB connection, express app and also stop our application:\nsrc/createApp.js:\nreturn { db, express: app, stop: () = db.end() } Great! So, now, we are going to create our test case file. This file will help us set up things, so we don’t need to repeat it every time.\ntest/appTestCase.js:\nconst createApp = require('../src/createApp') let app beforeAll(async () = { app = await createApp() global.app = app }) afterAll(async () = { await app.stop() }) Now, we can require our test case file:\ntest/app.test.js:\nrequire('./appTestCase') And modify our test case to use our new application object:\ntest/app.test.js:\nit('should say hello world', async () = { await request(app.express) .get('/') .expect(200, 'Hello World!') }) Finally, we can create the test for our pets endpoint:\ntest/app.test.js:\nit('should create pet', async () = { await request(app.express) .post('/pets') .send({ name: 'Fluffy' }) .expect(200) const result = await app.db.query(\"select * from pets where name = 'Fluffy'\") expect(result.rows.length).toBe(1) }) And, as you expect, if we run npx jest all the tests should successfully run. But, if we run npx jest again, we should see something like:\n$ npx jest FAIL test/app.test.js ✓ should say hello world (19 ms) ✕ should create pet (24 ms)  ● should create pet  expect(received).toBe(expected) // Object.is equality  Expected: 1 Received: 2  16 | 17 | const result = await app.db.query(\"select * from pets where name = 'Fluffy'\")  18 | expect(result.rows.length).toBe(1) | ^ 19 | }) 20 | The problem here is that the DB changes are persisted between each test run. Ideally, we want to have total isolation between tests. This means that each test run should receive a fresh copy of the database. We can solve this issue in a couple of manners.\n  Delete and recreate the whole database between test runs. This can work, but as our application grows, it starts to get slow to delete and re-create the whole database (especially if we have lots of migrations).\n  Delete all rows from all tables between test runs. This can also work, but this may be not straightforward like in the case we have constraints, for example.\n  Run each test inside a transaction and roll back at the end. This is the approach I like most. It’s what most of the backend frameworks do. It’s fast and straightforward and requires little to no change to the code.\n  So, let’s implement the third option:\ntest/appTestCase.js:\nbeforeEach(async () = { await app.db.query('begin') }) afterEach(async () = { await app.db.query('rollback') }) Quick and simple! Now, if we delete and recreate our database, we should be able to run out test suite multiple times, without issues:\n$ npx jest PASS test/app.test.js ✓ should say hello world (21 ms) ✓ should create pet (19 ms) Test Suites: 1 passed, 1 total Tests: 2 passed, 2 total Snapshots: 0 total Time: 0.636 s, estimated 1 s Ran all test suites. $ npx jest PASS test/app.test.js ✓ should say hello world (20 ms) ✓ should create pet (19 ms) Test Suites: 1 passed, 1 total Tests: 2 passed, 2 total Snapshots: 0 total Time: 0.61 s, estimated 1 s Ran all test suites.  Continue reading: Node.js testing - Third-party services\n",
+  "wordCount" : "666",
   "inLanguage": "en",
   "datePublished": "2022-02-02T21:23:54-04:00",
   "dateModified": "2022-02-02T21:23:54-04:00",
@@ -197,7 +197,7 @@ if (!doNotTrack) {
   <div class="post-content"><p>Sometimes, the code that we want to test reads or writes to a database.
 In that case, we need a little more setup to be able to test the integration
 with our database.</p>
-<p>Lets pretend we have a endpoint that creates pets:</p>
+<p>Let&rsquo;s pretend we have an endpoint that creates pets:</p>
 <p>src/createApp.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/pets&#39;</span>, <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pet</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">query</span>(
@@ -207,7 +207,7 @@ with our database.</p>
 
   <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">pet</span>)
 })
-</code></pre></div><p>Firstly, we need to connect to the db and create our pets table:</p>
+</code></pre></div><p>Firstly, we need to connect to the DB and create our pets table:</p>
 <p>src/createApp.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">db</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Client</span>()
 <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">connect</span>()
@@ -216,11 +216,11 @@ with our database.</p>
   <span style="color:#e6db74">&#39;create table if not exists pets (id serial primary key, name varchar(255))&#39;</span>
 )
 </code></pre></div><p>Note: <code>Client</code> uses the default configuration for connecting.</p>
-<p>We also need to use the json body parser, so we can send json objects
+<p>We also need to use the JSON body parser, so we can send JSON objects
 to our application:</p>
 <p>src/createApp.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">bodyParser</span>.<span style="color:#a6e22e">json</span>())
-</code></pre></div><p>We finally, we are going to return a object so we can access the db connection,
+</code></pre></div><p>Finally, we are going to return an object so we can access the DB connection,
 express app and also stop our application:</p>
 <p>src/createApp.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">return</span> {
@@ -229,7 +229,7 @@ express app and also stop our application:</p>
   <span style="color:#a6e22e">stop</span><span style="color:#f92672">:</span> () =&gt; <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">end</span>()
 }
 </code></pre></div><p>Great! So, now, we are going to create our test case file. This file will
-help us setting up things, so we don&rsquo;t need to repeat it every time.</p>
+help us set up things, so we don&rsquo;t need to repeat it every time.</p>
 <p>test/appTestCase.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/createApp&#39;</span>)
 
@@ -242,7 +242,7 @@ help us setting up things, so we don&rsquo;t need to repeat it every time.</p>
 <span style="color:#a6e22e">afterAll</span>(<span style="color:#66d9ef">async</span> () =&gt; {
   <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">stop</span>()
 })
-</code></pre></div><p>Now, we can require our test test case file:</p>
+</code></pre></div><p>Now, we can require our test case file:</p>
 <p>test/app.test.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./appTestCase&#39;</span>)
 </code></pre></div><p>And modify our test case to use our new application object:</p>
@@ -263,7 +263,7 @@ help us setting up things, so we don&rsquo;t need to repeat it every time.</p>
   <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">&#34;select * from pets where name = &#39;Fluffy&#39;&#34;</span>)
   <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">length</span>).<span style="color:#a6e22e">toBe</span>(<span style="color:#ae81ff">1</span>)
 })
-</code></pre></div><p>And, as you expect, if we run <code>npx jest</code>, all the tests should successfully run.
+</code></pre></div><p>And, as you expect, if we run <code>npx jest</code> all the tests should successfully run.
 But, if we run <code>npx jest</code> again, we should see something like:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest
  FAIL  test/app.test.js
@@ -283,29 +283,29 @@ But, if we run <code>npx jest</code> again, we should see something like:</p>
          |                              ^
       19 | })
       20 |
-</code></pre></div><p>The problem here is that the db changes are persisted between each test run.
+</code></pre></div><p>The problem here is that the DB changes are persisted between each test run.
 Ideally, we want to have total isolation between tests. This means that
-each test run, should receive a fresh copy of the database.
+each test run should receive a fresh copy of the database.
 We can solve this issue in a couple of manners.</p>
 <ol>
 <li>
 <p>Delete and recreate the whole database between test runs.
 This can work, but as our application grows, it starts to get slow
-to delete and re-create the whole database (specially if we have lots
+to delete and re-create the whole database (especially if we have lots
 of migrations).</p>
 </li>
 <li>
 <p>Delete all rows from all tables between test runs.
-This can also work, but this maybe not straightforward like in case
+This can also work, but this may be not straightforward like in the case
 we have constraints, for example.</p>
 </li>
 <li>
-<p>Run each test inside a transaction and rollback at the end.
+<p>Run each test inside a transaction and roll back at the end.
 This is the approach I like most. It&rsquo;s what most of the backend frameworks do.
 It&rsquo;s fast and straightforward and requires little to no change to the code.</p>
 </li>
 </ol>
-<p>So, lets implement the third option:</p>
+<p>So, let&rsquo;s implement the third option:</p>
 <p>test/appTestCase.js:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">beforeEach</span>(<span style="color:#66d9ef">async</span> () =&gt; {
   <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">&#39;begin&#39;</span>)
