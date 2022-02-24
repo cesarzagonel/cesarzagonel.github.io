@@ -110,7 +110,7 @@ if (!doNotTrack) {
   "keywords": [
     
   ],
-  "articleBody": "In the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let’s say that we have function A that happens to call function B but we don’t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let’s say we have the following situation:\nsrc/a.js:\nconst b = require('./b') module.exports = function a () { const bResult = b() return `Hello from ${bResult}!` } src/b.js:\nmodule.exports = function b () { return 'earth' } tests/a.test.js:\nconst a = require('../src/a') it('should say \"Hello from jupyter!\"', () = { expect(a()).toBe('Hello from jupyter!') }) As you would expect, if we run the tests, we are going to see a test failing:\n$ npx jest test/a.test.js FAIL test/a.test.js ✕ should say \"Hello from jupyter!\" (3 ms)  ● should say \"Hello from jupyter!\"  expect(received).toBe(expected) // Object.is equality  Expected: \"Hello from jupyter!\" Received: \"Hello from earth!\"  2 | 3 | it('should say \"Hello from jupyter!\"', () = {  4 | expect(a()).toBe('Hello from jupyter!') | ^ 5 | }) 6 |  at Object. (test/a.test.js:4:15) To fix this, we are going to use a jest method called mock, like this:\nconst a = require('../src/a') const b = require('../src/b') jest.mock('../src/b') it('should say \"Hello from jupyter!\"', () = { b.mockReturnValue('jupyter') expect(a()).toBe('Hello from jupyter!') }) Let’s break down what’s going on. First, we import b, so we can interact with it. Then, we call jest.mock and pass b path as parameter. This will intercept all requires to b and return a jest mock instance instead. This mock instance has special methods we can call, like mockReturnValue. And finally, b.mockReturnValue makes every call to b return jupyter.\nAnother useful thing we can do with mocks is assert if they have been called. Let’s assume the following scenario:\nsrc/c.js\nconst d = require('./d') module.exports = function c () { d() return 'function d have been called' } But, how can we make sure that function d have been called? Mocks can help us with that too!\ntest/c.test.js\nconst c = require('../src/c') const d = require('../src/d') jest.mock('../src/d') it('should call d', () = { c() expect(d).toHaveBeenCalled() }) As you expect, toHaveBeenCalled verifies if the mock d have been called. If we run the tests, we should see all tests passing:\n$ npx jest test/c.test.js PASS test/c.test.js ✓ should call d (1 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.132 s Another useful verification function is toHaveBeenCalledWith(arg1, arg2, ...) which checks if the function has been called with given arguments. You can see all the verification functions jest have here.\n",
+  "articleBody": "In the last part of this series, we were introduced to the concept of mocking. It turns out that we can also mock javascript functions as we are going to see. Let’s say that we have function A that happens to call function B but we don’t want to actually call function B while testing A. How can we get around this? Mocking is the answer! Let’s say we have the following situation:\nsrc/getGreet.js:\nconst getPlanet = require('./getPlanet') module.exports = function getGreet () { const planet = getPlanet() return `Hello from ${planet}!` } src/getPlant.js:\nmodule.exports = function getPlanet () { return 'earth' } tests/getGreet.test.js:\nconst getPlanet = require('../src/getPlanet') it('should say \"Hello from jupyter!\"', () = { expect(getGreet()).toBe('Hello from jupyter!') }) As you would expect, if we run the tests, we are going to see a test failing:\n$ npx jest test/getGreet.test.js FAIL test/getGreet.test.js ✕ should say \"Hello from jupyter!\" (3 ms)  ● should say \"Hello from jupyter!\"  expect(received).toBe(expected) // Object.is equality  Expected: \"Hello from jupyter!\" Received: \"Hello from earth!\"  2 | 3 | it('should say \"Hello from jupyter!\"', () = {  4 | expect(a()).toBe('Hello from jupyter!') | ^ 5 | }) 6 |  at Object. (test/getGreet.test.js:4:15) To fix this, we are going to use a jest method called mock, like this:\nconst getGreet = require('../src/getGreet') const getPlanet = require('../src/getPlanet') jest.mock('../src/getPlanet') it('should say \"Hello from jupyter!\"', () = { getPlanet.mockReturnValue('jupyter') expect(a()).toBe('Hello from jupyter!') }) Let’s break down what’s going on. First, we import getPlanet, so we can interact with it. Then, we call jest.mock and pass getPlanet path as parameter. This will intercept all requires to getPlanet and return a jest mock instance instead. This mock instance has special methods we can call, like mockReturnValue. And finally, getPlanet.mockReturnValue makes every call to getPlanet return jupyter.\nAnother useful thing we can do with mocks is assert if they have been called. Let’s assume the following scenario:\nsrc/caller.js:\nconst callee = require('./callee') module.exports = function caller () { callee() return 'function callee have been called' } But, how can we make sure that function callee have been called? Mocks can help us with that too!\ntest/caller.test.js:\nconst caller = require('../src/caller') const callee = require('../src/callee') jest.mock('../src/callee') it('should call callee', () = { callee() expect(callee).toHaveBeenCalled() }) As you expect, toHaveBeenCalled verifies if the mock callee have been called. If we run the tests, we should see all tests passing:\n$ npx jest test/caller.test.js PASS test/caller.test.js ✓ should call callee (1 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.132 s Another useful verification function is toHaveBeenCalledWith(arg1, arg2, ...) which checks if the function has been called with given arguments. You can see all the verification functions jest have here.\n",
   "wordCount" : "453",
   "inLanguage": "en",
   "datePublished": "2022-02-03T23:09:08-04:00",
@@ -199,26 +199,26 @@ It turns out that we can also mock javascript functions as we are going to see.
 Let&rsquo;s say that we have function <em>A</em> that happens to call function <em>B</em> but we don&rsquo;t want
 to actually call function <em>B</em> while testing <em>A</em>. How can we get around this? Mocking is
 the answer! Let&rsquo;s say we have the following situation:</p>
-<p>src/a.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">b</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./b&#39;</span>)
+<p>src/getGreet.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getPlanet</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./getPlanet&#39;</span>)
 
-<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">a</span> () {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">bResult</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">b</span>()
-  <span style="color:#66d9ef">return</span> <span style="color:#e6db74">`Hello from </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">bResult</span><span style="color:#e6db74">}</span><span style="color:#e6db74">!`</span>
+<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">getGreet</span> () {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">planet</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">getPlanet</span>()
+  <span style="color:#66d9ef">return</span> <span style="color:#e6db74">`Hello from </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">planet</span><span style="color:#e6db74">}</span><span style="color:#e6db74">!`</span>
 }
-</code></pre></div><p>src/b.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">b</span> () {
+</code></pre></div><p>src/getPlant.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">getPlanet</span> () {
   <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;earth&#39;</span>
 }
-</code></pre></div><p>tests/a.test.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/a&#39;</span>)
+</code></pre></div><p>tests/getGreet.test.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getPlanet</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/getPlanet&#39;</span>)
 
 <span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say &#34;Hello from jupyter!&#34;&#39;</span>, () =&gt; {
-  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">a</span>()).<span style="color:#a6e22e">toBe</span>(<span style="color:#e6db74">&#39;Hello from jupyter!&#39;</span>)
+  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">getGreet</span>()).<span style="color:#a6e22e">toBe</span>(<span style="color:#e6db74">&#39;Hello from jupyter!&#39;</span>)
 })
 </code></pre></div><p>As you would expect, if we run the tests, we are going to see a test failing:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest test/a.test.js
- FAIL  test/a.test.js
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest test/getGreet.test.js
+ FAIL  test/getGreet.test.js
   ✕ should say &#34;Hello from jupyter!&#34; (3 ms)
 <span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span>  ● should say &#34;Hello from jupyter!&#34;
@@ -235,49 +235,48 @@ the answer! Let&rsquo;s say we have the following situation:</p>
       5 | })
       6 |
 <span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>      at Object.&lt;anonymous&gt; (test/a.test.js:4:15)
+</span><span style="color:#960050;background-color:#1e0010"></span>      at Object.&lt;anonymous&gt; (test/getGreet.test.js:4:15)
 </code></pre></div><p>To fix this, we are going to use a jest method called <code>mock</code>, like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/a&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">b</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/b&#39;</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getGreet</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/getGreet&#39;</span>)
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">getPlanet</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/getPlanet&#39;</span>)
 
-<span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;../src/b&#39;</span>)
+<span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;../src/getPlanet&#39;</span>)
 
 <span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say &#34;Hello from jupyter!&#34;&#39;</span>, () =&gt; {
-  <span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">mockReturnValue</span>(<span style="color:#e6db74">&#39;jupyter&#39;</span>)
+  <span style="color:#a6e22e">getPlanet</span>.<span style="color:#a6e22e">mockReturnValue</span>(<span style="color:#e6db74">&#39;jupyter&#39;</span>)
 
   <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">a</span>()).<span style="color:#a6e22e">toBe</span>(<span style="color:#e6db74">&#39;Hello from jupyter!&#39;</span>)
 })
-</code></pre></div><p>Let&rsquo;s break down what&rsquo;s going on. First, we import <code>b</code>, so we can interact with it.
-Then, we call <code>jest.mock</code> and pass <code>b</code> path as parameter. This will intercept all requires
-to <code>b</code> and return a jest mock instance instead. This mock instance has special methods
-we can call, like <code>mockReturnValue</code>. And finally, <code>b.mockReturnValue</code> makes every call to
-<code>b</code> return <code>jupyter</code>.</p>
+</code></pre></div><p>Let&rsquo;s break down what&rsquo;s going on. First, we import <code>getPlanet</code>, so we can interact with it.
+Then, we call <code>jest.mock</code> and pass <code>getPlanet</code> path as parameter. This will intercept all requires
+to <code>getPlanet</code> and return a jest mock instance instead. This mock instance has special methods
+we can call, like <code>mockReturnValue</code>. And finally, <code>getPlanet.mockReturnValue</code> makes every call to
+<code>getPlanet</code> return <code>jupyter</code>.</p>
 <p>Another useful thing we can do with mocks is assert if they have been called. Let&rsquo;s assume
 the following scenario:</p>
-<p>src/c.js</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">d</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./d&#39;</span>)
+<p>src/caller.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">callee</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./callee&#39;</span>)
 
-<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">c</span> () {
-  <span style="color:#a6e22e">d</span>()
-  <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;function d have been called&#39;</span>
+<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">caller</span> () {
+  <span style="color:#a6e22e">callee</span>()
+  <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;function callee have been called&#39;</span>
 }
-</code></pre></div><p>But, how can we make sure that function <code>d</code> have been called? Mocks can help us with that too!</p>
-<p>test/c.test.js</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">c</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/c&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">d</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/d&#39;</span>)
+</code></pre></div><p>But, how can we make sure that function <code>callee</code> have been called? Mocks can help us with that too!</p>
+<p>test/caller.test.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">caller</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/caller&#39;</span>)
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">callee</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/callee&#39;</span>)
 
-<span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;../src/d&#39;</span>)
+<span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;../src/callee&#39;</span>)
 
-<span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should call d&#39;</span>, () =&gt; {
-  <span style="color:#a6e22e">c</span>()
+<span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should call callee&#39;</span>, () =&gt; {
+  <span style="color:#a6e22e">callee</span>()
 
-  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">d</span>).<span style="color:#a6e22e">toHaveBeenCalled</span>()
+  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">callee</span>).<span style="color:#a6e22e">toHaveBeenCalled</span>()
 })
-</code></pre></div><p>As you expect, <code>toHaveBeenCalled</code> verifies if the mock <code>d</code> have been called. If we run the tests,
-we should see all tests passing:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest test/c.test.js
- PASS  test/c.test.js
-  ✓ should call d (1 ms)
+</code></pre></div><p>As you expect, <code>toHaveBeenCalled</code> verifies if the mock <code>callee</code> have been called. If we run the tests, we should see all tests passing:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ npx jest test/caller.test.js
+ PASS  test/caller.test.js
+  ✓ should call callee (1 ms)
 <span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span>Test Suites: 1 passed, 1 total
 Tests:       1 passed, 1 total
