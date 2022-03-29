@@ -13,7 +13,7 @@
       <pubDate>Mon, 28 Mar 2022 23:34:44 -0400</pubDate>
       
       <guid>https://cesarzagonel.github.io/posts/make-things-testable/</guid>
-      <description>Something that I keep hearing is &amp;ldquo;testing is too hard!&amp;rdquo;. And, yes, I agree. Testing is not a trivial thing. But it is not that hard! Testing can get significantly hard if your application is not testable. People keep asking me: &amp;ldquo;how can I test my application?&amp;rdquo;. But, what they actually should be asking is: &amp;ldquo;how can I make my application testable?&amp;rdquo;.
+      <description>Something that I keep hearing is &amp;ldquo;testing is too hard!&amp;rdquo;. And, yes, I agree. Testing is not a trivial thing. But it is not that hard! Testing can get significantly harder if your application is not testable. People keep asking me: &amp;ldquo;how can I test my application?&amp;rdquo;. But, what they actually should be asking is: &amp;ldquo;how can I make my application testable?&amp;rdquo;.
 But what do I mean by &amp;ldquo;testable&amp;rdquo;? Tests consist of three simple parts: Arrange, act and assert.</description>
     </item>
     
