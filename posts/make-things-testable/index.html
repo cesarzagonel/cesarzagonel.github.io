@@ -268,7 +268,7 @@ code is too coupled. Let&rsquo;s look at an example:</p>
     <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">any</span>(Function)
   )
 })
-</code></pre></div><h1 id="the-code-knows-too-much">The code knows too much<a hidden class="anchor" aria-hidden="true" href="#the-code-knows-too-much">#</a></h1>
+</code></pre></div><h2 id="the-code-knows-too-much">The code knows too much<a hidden class="anchor" aria-hidden="true" href="#the-code-knows-too-much">#</a></h2>
 <p>What&rsquo;s the problem with the code above? It knows too much. It knows how to receive an incoming http request
 and the details of uploading to AWS' S3. The details about how the AWS sdk works are leaking into our code,
 and we don&rsquo;t want that. Ideally, each function should know how one and only one thing works.</p>
