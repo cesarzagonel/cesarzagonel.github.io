@@ -6,7 +6,17 @@
     <description>Recent content on Cesar Zagonel</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 03 Feb 2022 23:09:08 -0400</lastBuildDate><atom:link href="https://cesarzagonel.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 28 Mar 2022 23:34:44 -0400</lastBuildDate><atom:link href="https://cesarzagonel.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Make Things Testable</title>
+      <link>https://cesarzagonel.github.io/posts/make-things-testable/</link>
+      <pubDate>Mon, 28 Mar 2022 23:34:44 -0400</pubDate>
+      
+      <guid>https://cesarzagonel.github.io/posts/make-things-testable/</guid>
+      <description>Something that I keep hearing is &amp;ldquo;testing is too hard!&amp;rdquo;. And, yes, I agree. Testing is not a trivial thing. But it is not that hard! Testing is significantly hard if your application is not testable. People keep asking me: &amp;ldquo;how can I test my application?&amp;rdquo;. But, what they actually should be asking is: &amp;ldquo;how can I make my application testable?&amp;rdquo;.
+But what do I mean by &amp;ldquo;testable&amp;rdquo;? Tests consist of three simple parts: Arrange, act and assert.</description>
+    </item>
+    
     <item>
       <title>Node.js testing - Mocking</title>
       <link>https://cesarzagonel.github.io/posts/nodejs-testing-mocking/</link>
