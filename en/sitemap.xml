@@ -53,6 +53,18 @@
     <loc>https://cesarzagonel.github.io/posts/nodejs-testing-intro/</loc>
     <lastmod>2022-02-02T21:23:50-04:00</lastmod>
   </url><url>
+    <loc>https://cesarzagonel.github.io/archives/</loc>
+    <xhtml:link
+                rel="alternate"
+                hreflang="br"
+                href="https://cesarzagonel.github.io/archives/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://cesarzagonel.github.io/archives/"
+                />
+  </url><url>
     <loc>https://cesarzagonel.github.io/categories/</loc>
     <xhtml:link
                 rel="alternate"
