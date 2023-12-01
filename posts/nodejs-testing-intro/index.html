@@ -6,12 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
 <title>Node.js testing - Intro | Cesar Zagonel</title>
-<meta name="keywords" content="" />
+<meta name="keywords" content="">
 <meta name="description" content="Testing express applications using jest.">
 <meta name="author" content="">
-<link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" />
-<link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
-<script defer crossorigin="anonymous" src="/assets/js/highlight.min.5b9ae0304f93db6cc493f51846f012428af399c614b4f2fbdb7fa59dd4d5ef5b.js" integrity="sha256-W5rgME&#43;T22zEk/UYRvASQorzmcYUtPL723&#43;lndTV71s="
+<link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.5cfc680b1eeaeef9efbced92d46c2a9e876b72ee14fba85846afc4cff9e6e6f8.css" integrity="sha256-XPxoCx7q7vnvvO2S1Gwqnodrcu4U&#43;6hYRq/Ez/nm5vg=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
     onload="hljs.initHighlightingOnLoad();"></script>
 <link rel="icon" href="https://cesarzagonel.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://cesarzagonel.github.io/favicon-16x16.png">
@@ -20,8 +20,7 @@
 <link rel="mask-icon" href="https://cesarzagonel.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.120.4">
-<link rel="alternate" hreflang="en" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" />
+<link rel="alternate" hreflang="en" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/">
 <noscript>
     <style>
         #theme-toggle,
@@ -148,14 +147,14 @@ if (!doNotTrack) {
     <nav class="nav">
         <div class="logo">
             <a href="https://cesarzagonel.github.io/" accesskey="h" title="Cesar Zagonel (Alt + H)">Cesar Zagonel</a>
-            <span class="logo-switches">
+            <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
-                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
-                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">
                         <circle cx="12" cy="12" r="5"></circle>
@@ -175,7 +174,7 @@ if (!doNotTrack) {
                             aria-label="Br">Br</a>
                     </li>
                 </ul>
-            </span>
+            </div>
         </div>
         <ul id="menu">
             <li>
@@ -197,7 +196,7 @@ if (!doNotTrack) {
     <div class="post-description">
       Testing express applications using jest.
     </div>
-    <div class="post-meta">&lt;span title=&#39;2022-02-02 21:23:50 -0400 -0400&#39;&gt;February 2, 2022&lt;/span&gt;
+    <div class="post-meta"><span title='2022-02-02 21:23:50 -0400 -0400'>February 2, 2022</span>
 
 </div>
   </header> 
@@ -330,6 +329,8 @@ application like:</p>
   </div>
 
   <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
   </footer>
 </article>
     </main>
@@ -339,7 +340,7 @@ application like:</p>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
-        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
     </span>
 </footer>
 <a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
