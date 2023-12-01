@@ -6,12 +6,12 @@
     <lastmod>2022-03-28T23:34:44-04:00</lastmod>
     <xhtml:link
                 rel="alternate"
-                hreflang="br"
+                hreflang="pt-br"
                 href="https://cesarzagonel.github.io/br/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
+                hreflang="en-us"
                 href="https://cesarzagonel.github.io/"
                 />
   </url><url>
@@ -19,12 +19,12 @@
     <lastmod>2022-03-28T23:34:44-04:00</lastmod>
     <xhtml:link
                 rel="alternate"
-                hreflang="br"
+                hreflang="pt-br"
                 href="https://cesarzagonel.github.io/br/posts/make-things-testable/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
+                hreflang="en-us"
                 href="https://cesarzagonel.github.io/posts/make-things-testable/"
                 />
   </url><url>
@@ -32,12 +32,12 @@
     <lastmod>2022-03-28T23:34:44-04:00</lastmod>
     <xhtml:link
                 rel="alternate"
-                hreflang="br"
+                hreflang="pt-br"
                 href="https://cesarzagonel.github.io/br/posts/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
+                hreflang="en-us"
                 href="https://cesarzagonel.github.io/posts/"
                 />
   </url><url>
@@ -56,36 +56,36 @@
     <loc>https://cesarzagonel.github.io/archives/</loc>
     <xhtml:link
                 rel="alternate"
-                hreflang="br"
+                hreflang="pt-br"
                 href="https://cesarzagonel.github.io/archives/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
+                hreflang="en-us"
                 href="https://cesarzagonel.github.io/archives/"
                 />
   </url><url>
     <loc>https://cesarzagonel.github.io/categories/</loc>
     <xhtml:link
                 rel="alternate"
-                hreflang="br"
+                hreflang="pt-br"
                 href="https://cesarzagonel.github.io/br/categories/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
+                hreflang="en-us"
                 href="https://cesarzagonel.github.io/categories/"
                 />
   </url><url>
     <loc>https://cesarzagonel.github.io/tags/</loc>
     <xhtml:link
                 rel="alternate"
-                hreflang="br"
+                hreflang="pt-br"
                 href="https://cesarzagonel.github.io/br/tags/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
+                hreflang="en-us"
                 href="https://cesarzagonel.github.io/tags/"
                 />
   </url>

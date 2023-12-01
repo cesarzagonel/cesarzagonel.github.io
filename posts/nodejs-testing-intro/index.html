@@ -11,7 +11,7 @@
 <meta name="author" content="">
 <link rel="canonical" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
-<script defer crossorigin="anonymous" src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.5b9ae0304f93db6cc493f51846f012428af399c614b4f2fbdb7fa59dd4d5ef5b.js" integrity="sha256-W5rgME&#43;T22zEk/UYRvASQorzmcYUtPL723&#43;lndTV71s="
     onload="hljs.initHighlightingOnLoad();"></script>
 <link rel="icon" href="https://cesarzagonel.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://cesarzagonel.github.io/favicon-16x16.png">
@@ -20,7 +20,7 @@
 <link rel="mask-icon" href="https://cesarzagonel.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.92.1" />
+<meta name="generator" content="Hugo 0.120.4">
 <link rel="alternate" hreflang="en" href="https://cesarzagonel.github.io/posts/nodejs-testing-intro/" />
 <noscript>
     <style>
@@ -111,7 +111,7 @@ if (!doNotTrack) {
   "keywords": [
     
   ],
-  "articleBody": "All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like API endpoints, integration with databases, and third-party services. In this first part, we are going to see how to test express endpoints, come with me.\nAs an example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require('express') const app = express() const port = 3000 app.get('/', (req, res) = { res.send('Hello World!') }) app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \"name\": \"testing\", \"version\": \"1.0.0\", \"main\": \"index.js\", \"license\": \"MIT\", \"dependencies\": { \"express\": \"^4.17.2\" }, \"scripts\": { \"start\": \"node index.js\" } } For the test framework, we are going to use Jest. So, let’s install it using the command:\nnpm install jest ---save-dev And now, we can write our first test:\ntest/app.test.js:\nit('should say hello world', () = { console.log('Hello World!') }) And now we can finally run our first test using the command:\nnpx jest You should see something similar on the terminal if everything ran smoothly:\n➜ npx jest console.log Hello World! at Object. (test/app.test.js:2:11) PASS ./test/app.test.js ✓ should say hello world (18 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.302 s, estimated 1 s Ran all test suites. To send requests to our express application, we are going to use supertest. Supertest provides us with lots of functions to make our life easier. Let’s go ahead and install it using:\nnpm install supertest --save-dev In order to test our application, we need to move some of the express app creation logic into a file we can import from the test file:\nindex.js:\nconst createApp = require('./src/createApp') const app = createApp() const port = 3000 app.listen(port, () = { console.log(`Example app listening at http://localhost:${port}`) }) src/createApp.js:\nconst express = require('express') module.exports = () = { const app = express() app.get('/', (req, res) = { res.send('Hello World!') }) return app } Now that we have all set, we can test our Hello World endpoint:\ntest/app.test.js:\nconst request = require('supertest') const createApp = require('../src/createApp') it('should say hello world', async () = { await request(createApp()) .get('/') .expect(200, 'Hello World!') }) If everything went well, you should see something like this on the terminal:\n➜ testing npx jest PASS ./test/app.test.js ✓ should say hello world (31 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.726 s, estimated 1 s Ran all test suites. That’s it! We successfully ran our first express test. Before we finish this first part, lets break down what is happening:\nawait request(createApp()) Here, we create an instance of our app and pass it to supertest. Supertest does all the heavy work of binding our application to a specific port and making sure each request goes to the right place.\n.get('/') Here, we tell supertest to send a GET request to the / path.\n.expect(200, 'Hello World!') And finally, here we make sure that the response status is 200 and the body is exactly Hello World!.\nSupertest is a very helpful library, it allows us to verify different behaviors of our application like:\nThe endpoint should return a 500 error:\n.expect(500) The endpoint should return a object:\n.expect(200, { lorem: 'ipsum' }) And many others. You can know more about supertest here.\n Continue reading: Node.js testing - Database\n",
+  "articleBody": "All my colleagues know that I love testing. I really think that tests are a neat tool that can leverage our productivity and the quality of what we write. That being said, in this series of articles, we will be seeing how we can test everyday stuff like API endpoints, integration with databases, and third-party services. In this first part, we are going to see how to test express endpoints, come with me.\nAs an example, we are going to start with this basic hello world application:\nindex.js:\nconst express = require('express') const app = express() const port = 3000 app.get('/', (req, res) =\u003e { res.send('Hello World!') }) app.listen(port, () =\u003e { console.log(`Example app listening at http://localhost:${port}`) }) package.json:\n{ \"name\": \"testing\", \"version\": \"1.0.0\", \"main\": \"index.js\", \"license\": \"MIT\", \"dependencies\": { \"express\": \"^4.17.2\" }, \"scripts\": { \"start\": \"node index.js\" } } For the test framework, we are going to use Jest. So, let’s install it using the command:\nnpm install jest ---save-dev And now, we can write our first test:\ntest/app.test.js:\nit('should say hello world', () =\u003e { console.log('Hello World!') }) And now we can finally run our first test using the command:\nnpx jest You should see something similar on the terminal if everything ran smoothly:\n➜ npx jest console.log Hello World! at Object. (test/app.test.js:2:11) PASS ./test/app.test.js ✓ should say hello world (18 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.302 s, estimated 1 s Ran all test suites. To send requests to our express application, we are going to use supertest. Supertest provides us with lots of functions to make our life easier. Let’s go ahead and install it using:\nnpm install supertest --save-dev In order to test our application, we need to move some of the express app creation logic into a file we can import from the test file:\nindex.js:\nconst createApp = require('./src/createApp') const app = createApp() const port = 3000 app.listen(port, () =\u003e { console.log(`Example app listening at http://localhost:${port}`) }) src/createApp.js:\nconst express = require('express') module.exports = () =\u003e { const app = express() app.get('/', (req, res) =\u003e { res.send('Hello World!') }) return app } Now that we have all set, we can test our Hello World endpoint:\ntest/app.test.js:\nconst request = require('supertest') const createApp = require('../src/createApp') it('should say hello world', async () =\u003e { await request(createApp()) .get('/') .expect(200, 'Hello World!') }) If everything went well, you should see something like this on the terminal:\n➜ testing npx jest PASS ./test/app.test.js ✓ should say hello world (31 ms) Test Suites: 1 passed, 1 total Tests: 1 passed, 1 total Snapshots: 0 total Time: 0.726 s, estimated 1 s Ran all test suites. That’s it! We successfully ran our first express test. Before we finish this first part, lets break down what is happening:\nawait request(createApp()) Here, we create an instance of our app and pass it to supertest. Supertest does all the heavy work of binding our application to a specific port and making sure each request goes to the right place.\n.get('/') Here, we tell supertest to send a GET request to the / path.\n.expect(200, 'Hello World!') And finally, here we make sure that the response status is 200 and the body is exactly Hello World!.\nSupertest is a very helpful library, it allows us to verify different behaviors of our application like:\nThe endpoint should return a 500 error:\n.expect(500) The endpoint should return a object:\n.expect(200, { lorem: 'ipsum' }) And many others. You can know more about supertest here.\nContinue reading: Node.js testing - Database\n",
   "wordCount" : "594",
   "inLanguage": "en",
   "datePublished": "2022-02-02T21:23:50-04:00",
@@ -197,7 +197,7 @@ if (!doNotTrack) {
     <div class="post-description">
       Testing express applications using jest.
     </div>
-    <div class="post-meta"><span title='2022-02-02 21:23:50 -0400 -04'>February 2, 2022</span>
+    <div class="post-meta">&lt;span title=&#39;2022-02-02 21:23:50 -0400 -0400&#39;&gt;February 2, 2022&lt;/span&gt;
 
 </div>
   </header> 
@@ -207,41 +207,41 @@ be seeing how we can test everyday stuff like API endpoints, integration with da
 In this first part, we are going to see how to test express endpoints, come with me.</p>
 <p>As an example, we are going to start with this basic <code>hello world</code> application:</p>
 <p>index.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
-
-<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
-  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
-})
-
-<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
-  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Example app listening at http://localhost:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
-})
-</code></pre></div><p>package.json:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;testing&#34;</span>,
-  <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
-  <span style="color:#f92672">&#34;main&#34;</span>: <span style="color:#e6db74">&#34;index.js&#34;</span>,
-  <span style="color:#f92672">&#34;license&#34;</span>: <span style="color:#e6db74">&#34;MIT&#34;</span>,
-  <span style="color:#f92672">&#34;dependencies&#34;</span>: {
-    <span style="color:#f92672">&#34;express&#34;</span>: <span style="color:#e6db74">&#34;^4.17.2&#34;</span>
-  },
-  <span style="color:#f92672">&#34;scripts&#34;</span>: {
-    <span style="color:#f92672">&#34;start&#34;</span>: <span style="color:#e6db74">&#34;node index.js&#34;</span>
-  }
-}
-</code></pre></div><p>For the test framework, we are going to use Jest. So, let&rsquo;s install it
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Example app listening at http://localhost:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>package.json:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;testing&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;main&#34;</span>: <span style="color:#e6db74">&#34;index.js&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;license&#34;</span>: <span style="color:#e6db74">&#34;MIT&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;dependencies&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;express&#34;</span>: <span style="color:#e6db74">&#34;^4.17.2&#34;</span>
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;scripts&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;start&#34;</span>: <span style="color:#e6db74">&#34;node index.js&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>For the test framework, we are going to use Jest. So, let&rsquo;s install it
 using the command:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">npm install jest ---save-dev
-</code></pre></div><p>And now, we can write our first test:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>npm install jest ---save-dev
+</span></span></code></pre></div><p>And now, we can write our first test:</p>
 <p>test/app.test.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, () =&gt; {
-  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
-})
-</code></pre></div><p>And now we can finally run our first test using the command:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">npx jest
-</code></pre></div><p>You should see something similar on the terminal if everything ran smoothly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>And now we can finally run our first test using the command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>npx jest
+</span></span></code></pre></div><p>You should see something similar on the terminal if everything ran smoothly:</p>
 <pre tabindex="0"><code>➜  npx jest
   console.log
     Hello World!
@@ -259,70 +259,70 @@ Ran all test suites.
 </code></pre><p>To send requests to our express application, we are going
 to use supertest. Supertest provides us with lots of functions to make our life easier.
 Let&rsquo;s go ahead and install it using:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">npm install supertest --save-dev
-</code></pre></div><p>In order to test our application, we need to move some of the express app
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>npm install supertest --save-dev
+</span></span></code></pre></div><p>In order to test our application, we need to move some of the express app
 creation logic into a file we can import from the test file:</p>
 <p>index.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./src/createApp&#39;</span>)
-
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">createApp</span>()
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
-
-<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
-  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Example app listening at http://localhost:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
-})
-</code></pre></div><p>src/createApp.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
-
-<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> () =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
-
-  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
-    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
-  })
-
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">app</span>
-}
-</code></pre></div><p>Now that we have all set, we can test our Hello World endpoint:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./src/createApp&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">createApp</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Example app listening at http://localhost:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>src/createApp.js:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+</span></span><span style="display:flex;"><span>  })
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">app</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we have all set, we can test our Hello World endpoint:</p>
 <p>test/app.test.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/createApp&#39;</span>)
-
-<span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">createApp</span>())
-    .<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
-    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
-})
-</code></pre></div><p>If everything went well, you should see something like this on the terminal:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  testing npx jest
- PASS  ./test/app.test.js
-  ✓ should say hello world <span style="color:#f92672">(</span><span style="color:#ae81ff">31</span> ms<span style="color:#f92672">)</span>
-
-Test Suites: <span style="color:#ae81ff">1</span> passed, <span style="color:#ae81ff">1</span> total
-Tests:       <span style="color:#ae81ff">1</span> passed, <span style="color:#ae81ff">1</span> total
-Snapshots:   <span style="color:#ae81ff">0</span> total
-Time:        0.726 s, estimated <span style="color:#ae81ff">1</span> s
-Ran all test suites.
-</code></pre></div><p>That&rsquo;s it! We successfully ran our first express test.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">createApp</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../src/createApp&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should say hello world&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">createApp</span>())
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>If everything went well, you should see something like this on the terminal:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>➜  testing npx jest
+</span></span><span style="display:flex;"><span> PASS  ./test/app.test.js
+</span></span><span style="display:flex;"><span>  ✓ should say hello world <span style="color:#f92672">(</span><span style="color:#ae81ff">31</span> ms<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Test Suites: <span style="color:#ae81ff">1</span> passed, <span style="color:#ae81ff">1</span> total
+</span></span><span style="display:flex;"><span>Tests:       <span style="color:#ae81ff">1</span> passed, <span style="color:#ae81ff">1</span> total
+</span></span><span style="display:flex;"><span>Snapshots:   <span style="color:#ae81ff">0</span> total
+</span></span><span style="display:flex;"><span>Time:        0.726 s, estimated <span style="color:#ae81ff">1</span> s
+</span></span><span style="display:flex;"><span>Ran all test suites.
+</span></span></code></pre></div><p>That&rsquo;s it! We successfully ran our first express test.
 Before we finish this first part, lets break down what is happening:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">createApp</span>())
-</code></pre></div><p>Here, we create an instance of our app and pass it to supertest.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">createApp</span>())
+</span></span></code></pre></div><p>Here, we create an instance of our app and pass it to supertest.
 Supertest does all the heavy work of binding our application to
 a specific port and making sure each request goes to the right place.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
-</code></pre></div><p>Here, we tell supertest to send a <code>GET</code> request to the <code>/</code> path.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
-</code></pre></div><p>And finally, here we make sure that the response status is <code>200</code> and
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/&#39;</span>)
+</span></span></code></pre></div><p>Here, we tell supertest to send a <code>GET</code> request to the <code>/</code> path.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span>.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, <span style="color:#e6db74">&#39;Hello World!&#39;</span>)
+</span></span></code></pre></div><p>And finally, here we make sure that the response status is <code>200</code> and
 the body is exactly <code>Hello World!</code>.</p>
 <p>Supertest is a very helpful library, it allows us to verify different behaviors of our
 application like:</p>
 <p>The endpoint should return a 500 error:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">500</span>)
-</code></pre></div><p>The endpoint should return a object:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, {
-  <span style="color:#a6e22e">lorem</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;ipsum&#39;</span>
-})
-</code></pre></div><p>And many others. You can know more about supertest <a href="https://www.npmjs.com/package/supertest">here</a>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span>.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">500</span>)
+</span></span></code></pre></div><p>The endpoint should return a object:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span>.<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>, {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">lorem</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;ipsum&#39;</span>
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>And many others. You can know more about supertest <a href="https://www.npmjs.com/package/supertest">here</a>.</p>
 <p> </p>
 <p>Continue reading: <a href="/posts/nodejs-testing-database">Node.js testing - Database</a></p>
 
@@ -335,7 +335,7 @@ application like:</p>
     </main>
     
 <footer class="footer">
-    <span>&copy; 2022 <a href="https://cesarzagonel.github.io/">Cesar Zagonel</a></span>
+    <span>&copy; 2023 <a href="https://cesarzagonel.github.io/">Cesar Zagonel</a></span>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &

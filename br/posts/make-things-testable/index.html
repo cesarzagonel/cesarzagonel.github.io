@@ -12,7 +12,7 @@ Mas o que eu quero dizer com &ldquo;testável&rdquo;? Testes consistem de três 
 <meta name="author" content="">
 <link rel="canonical" href="https://cesarzagonel.github.io/br/posts/make-things-testable/" />
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css" integrity="sha256-yIlj/i15RiAA/Q&#43;xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as="style">
-<script defer crossorigin="anonymous" src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+<script defer crossorigin="anonymous" src="/assets/js/highlight.min.5b9ae0304f93db6cc493f51846f012428af399c614b4f2fbdb7fa59dd4d5ef5b.js" integrity="sha256-W5rgME&#43;T22zEk/UYRvASQorzmcYUtPL723&#43;lndTV71s="
     onload="hljs.initHighlightingOnLoad();"></script>
 <link rel="icon" href="https://cesarzagonel.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://cesarzagonel.github.io/favicon-16x16.png">
@@ -21,7 +21,7 @@ Mas o que eu quero dizer com &ldquo;testável&rdquo;? Testes consistem de três 
 <link rel="mask-icon" href="https://cesarzagonel.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.92.1" />
+<meta name="generator" content="Hugo 0.120.4">
 <link rel="alternate" hreflang="br" href="https://cesarzagonel.github.io/br/posts/make-things-testable/" />
 <link rel="alternate" hreflang="en" href="https://cesarzagonel.github.io/posts/make-things-testable/" />
 <noscript>
@@ -115,7 +115,7 @@ Mas o que eu quero dizer com &ldquo;testável&rdquo;? Testes consistem de três 
   "keywords": [
     
   ],
-  "articleBody": "Algo que eu sempre ouço é: “testes automatizados são muito difíceis!”. Sim, eu concordo. Escrever testes não é uma tarefa trivial. Mas não é tão difícil! Testes podem ficar significamente mais complicados se sua aplicação não é testável. As pessoas me perguntam: “Como posso testar minha aplicação?”. Mas o que elas realmente deveria estar perguntando é: “como posso deixar minha aplicação testável?”.\nMas o que eu quero dizer com “testável”? Testes consistem de três simples partes: Arranjo, ação e asserção. O “arranjo” e “asserção” podem ser bem complicadas se o seu código é muito acoplado. Vamos ver um exemplo:\nconst express = require('express') const multer = require('multer') const AWS = require('aws-sdk') require('dotenv').config() AWS.config.update({ region: process.env.AWS_REGION }) const s3 = new AWS.S3({ apiVersion: '2006-03-01' }) const app = express() const upload = multer() const port = 3000 app.post('/upload', upload.single('file'), (req, res) = { const file = req.file s3.upload( { Bucket: process.env.AWS_BUCKET, Key: file.originalname, Body: file.buffer }, (err, data) = { if (err) { res.status(500).send(err) return } res.send('') } ) }) if (process.env.NODE_ENV !== 'test') { app.listen(port, () = { console.log(`Listening on port ${port}`) }) } module.exports = app Este é um código relativamente simples. Ele recebe um arquivo enviado e reenvia para o S3 da AWS. Agora, vamos ver como podemos testar isso:\nconst app = require('../index') const request = require('supertest') const AWS = require('aws-sdk') jest.mock('aws-sdk') it('deve enviar arquivo para s3', async () = { const S3Client = AWS.S3.mock.instances[0] S3Client.upload.mockImplementation((params, callback) = callback(null, null)) await request(app) .post('/upload') .attach('file', 'test/fixtures/image.jpeg') .expect(200) expect(S3Client.upload).toHaveBeenCalledWith( expect.objectContaining({ Key: 'image.jpeg' }), expect.any(Function) ) }) O código sabe demais Qual o problema com o código acima? Ele simplesmente sabe demais. Ele sabe como receber uma requisição http e como respondê-la e também os detalhes de como fazer o upload para a S3. Os detalhes de como o SDK da AWS funciona estão vazando para nosso código, e nós não queremos isso. Em um cenário ideal, cada função deve saber como uma e apenas uma coisa funciona.\nComo podemos nos livrar deste problema? A resposta é: delineando linhas claras entre nosso código e o SDK da AWS.\nEntão, vamos refatorar nosso método de upload em uma forma mais desacoplada:\nindex.js:\nconst express = require('express') const multer = require('multer') const { uploadFile } = require('./s3_client') require('dotenv').config() const app = express() const upload = multer() const port = 3000 app.post('/upload', upload.single('file'), async (req, res) = { const file = req.file try { await uploadFile(file.originalname, file.buffer) res.send('') } catch (e) { res.status(500).send(e) return } }) if (process.env.NODE_ENV !== 'test') { app.listen(port, () = { console.log(`Listening on port ${port}`) }) } module.exports = app  s3_client.js:\nconst AWS = require('aws-sdk') AWS.config.update({ region: process.env.AWS_REGION }) const s3 = new AWS.S3({ apiVersion: '2006-03-01' }) module.exports = { async uploadFile (name, data) { await new Promise((resolve, reject) = { s3.upload( { Bucket: process.env.AWS_BUCKET, Key: name, Body: data }, (err, data) = { if (err) { reject(err) return } resolve() } ) }) } } Nós movemos todoa a logica de “como enviar um arquivo para a S3” para a função uploadFile. O método /upload não se importa como o arquivo é enviado para a S3. Ele apenas se importa se o arquivo foi enviado ou não. Consequentemente, podemos ver que testar esta versão do nosso método é muito mais simples:\nconst app = require('../index') const request = require('supertest') const { uploadFile } = require('../s3_client') jest.mock('../s3_client') it('deve enviar arquivo para s3', async () = { await request(app) .post('/upload') .attach('file', 'test/fixtures/image.jpeg') .expect(200) expect(uploadFile).toHaveBeenCalledWith('image.jpeg', expect.any(Buffer)) })  Como podemos ver, nós deixamos o nosso teste mais simples e o nosso código mais limpo no processo. Ganhamos em ambos os lados. E isso é o que normalmente acontece.\nTestar o seu código não vai o fazer mais limpo por si só, porém deixando o seu código mais fácil de testar provavelmente vai. Fique atento a testes complexos: eles geralmente são um sinal de que seu código é muito acoplado.\n",
+  "articleBody": "Algo que eu sempre ouço é: “testes automatizados são muito difíceis!”. Sim, eu concordo. Escrever testes não é uma tarefa trivial. Mas não é tão difícil! Testes podem ficar significamente mais complicados se sua aplicação não é testável. As pessoas me perguntam: “Como posso testar minha aplicação?”. Mas o que elas realmente deveria estar perguntando é: “como posso deixar minha aplicação testável?”.\nMas o que eu quero dizer com “testável”? Testes consistem de três simples partes: Arranjo, ação e asserção. O “arranjo” e “asserção” podem ser bem complicadas se o seu código é muito acoplado. Vamos ver um exemplo:\nconst express = require('express') const multer = require('multer') const AWS = require('aws-sdk') require('dotenv').config() AWS.config.update({ region: process.env.AWS_REGION }) const s3 = new AWS.S3({ apiVersion: '2006-03-01' }) const app = express() const upload = multer() const port = 3000 app.post('/upload', upload.single('file'), (req, res) =\u003e { const file = req.file s3.upload( { Bucket: process.env.AWS_BUCKET, Key: file.originalname, Body: file.buffer }, (err, data) =\u003e { if (err) { res.status(500).send(err) return } res.send('') } ) }) if (process.env.NODE_ENV !== 'test') { app.listen(port, () =\u003e { console.log(`Listening on port ${port}`) }) } module.exports = app Este é um código relativamente simples. Ele recebe um arquivo enviado e reenvia para o S3 da AWS. Agora, vamos ver como podemos testar isso:\nconst app = require('../index') const request = require('supertest') const AWS = require('aws-sdk') jest.mock('aws-sdk') it('deve enviar arquivo para s3', async () =\u003e { const S3Client = AWS.S3.mock.instances[0] S3Client.upload.mockImplementation((params, callback) =\u003e callback(null, null)) await request(app) .post('/upload') .attach('file', 'test/fixtures/image.jpeg') .expect(200) expect(S3Client.upload).toHaveBeenCalledWith( expect.objectContaining({ Key: 'image.jpeg' }), expect.any(Function) ) }) O código sabe demais Qual o problema com o código acima? Ele simplesmente sabe demais. Ele sabe como receber uma requisição http e como respondê-la e também os detalhes de como fazer o upload para a S3. Os detalhes de como o SDK da AWS funciona estão vazando para nosso código, e nós não queremos isso. Em um cenário ideal, cada função deve saber como uma e apenas uma coisa funciona.\nComo podemos nos livrar deste problema? A resposta é: delineando linhas claras entre nosso código e o SDK da AWS.\nEntão, vamos refatorar nosso método de upload em uma forma mais desacoplada:\nindex.js:\nconst express = require('express') const multer = require('multer') const { uploadFile } = require('./s3_client') require('dotenv').config() const app = express() const upload = multer() const port = 3000 app.post('/upload', upload.single('file'), async (req, res) =\u003e { const file = req.file try { await uploadFile(file.originalname, file.buffer) res.send('') } catch (e) { res.status(500).send(e) return } }) if (process.env.NODE_ENV !== 'test') { app.listen(port, () =\u003e { console.log(`Listening on port ${port}`) }) } module.exports = app s3_client.js:\nconst AWS = require('aws-sdk') AWS.config.update({ region: process.env.AWS_REGION }) const s3 = new AWS.S3({ apiVersion: '2006-03-01' }) module.exports = { async uploadFile (name, data) { await new Promise((resolve, reject) =\u003e { s3.upload( { Bucket: process.env.AWS_BUCKET, Key: name, Body: data }, (err, data) =\u003e { if (err) { reject(err) return } resolve() } ) }) } } Nós movemos todoa a logica de “como enviar um arquivo para a S3” para a função uploadFile. O método /upload não se importa como o arquivo é enviado para a S3. Ele apenas se importa se o arquivo foi enviado ou não. Consequentemente, podemos ver que testar esta versão do nosso método é muito mais simples:\nconst app = require('../index') const request = require('supertest') const { uploadFile } = require('../s3_client') jest.mock('../s3_client') it('deve enviar arquivo para s3', async () =\u003e { await request(app) .post('/upload') .attach('file', 'test/fixtures/image.jpeg') .expect(200) expect(uploadFile).toHaveBeenCalledWith('image.jpeg', expect.any(Buffer)) }) Como podemos ver, nós deixamos o nosso teste mais simples e o nosso código mais limpo no processo. Ganhamos em ambos os lados. E isso é o que normalmente acontece.\nTestar o seu código não vai o fazer mais limpo por si só, porém deixando o seu código mais fácil de testar provavelmente vai. Fique atento a testes complexos: eles geralmente são um sinal de que seu código é muito acoplado.\n",
   "wordCount" : "647",
   "inLanguage": "br",
   "datePublished": "2022-03-28T23:34:44-04:00",
@@ -198,7 +198,7 @@ Mas o que eu quero dizer com &ldquo;testável&rdquo;? Testes consistem de três 
     <h1 class="post-title">
       Escreva códigos testáveis
     </h1>
-    <div class="post-meta"><span title='2022-03-28 23:34:44 -0400 -04'>Meurzh 28, 2022</span>&nbsp;|&nbsp;
+    <div class="post-meta">&lt;span title=&#39;2022-03-28 23:34:44 -0400 -0400&#39;&gt;Meurzh 28, 2022&lt;/span&gt;&nbsp;|&nbsp;
 <ul class="i18n_list">Translations:
     <li>
         <a href="https://cesarzagonel.github.io/posts/make-things-testable/">En</a>
@@ -215,71 +215,71 @@ significamente mais complicados se sua aplicação não é testável. As pessoas
 <p>Mas o que eu quero dizer com &ldquo;testável&rdquo;? Testes consistem de três simples partes: Arranjo,
 ação e asserção. O &ldquo;arranjo&rdquo; e &ldquo;asserção&rdquo; podem ser bem complicadas se o seu código é muito
 acoplado. Vamos ver um exemplo:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">multer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;multer&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">AWS</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
-
-<span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;dotenv&#39;</span>).<span style="color:#a6e22e">config</span>()
-
-<span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">update</span>({ <span style="color:#a6e22e">region</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_REGION</span> })
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s3</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">S3</span>({ <span style="color:#a6e22e">apiVersion</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;2006-03-01&#39;</span> })
-
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">upload</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multer</span>()
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
-
-<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>, <span style="color:#a6e22e">upload</span>.<span style="color:#a6e22e">single</span>(<span style="color:#e6db74">&#39;file&#39;</span>), (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">file</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">file</span>
-
-  <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">upload</span>(
-    {
-      <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_BUCKET</span>,
-      <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">originalname</span>,
-      <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">buffer</span>
-    },
-    (<span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">data</span>) =&gt; {
-      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">err</span>) {
-        <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">500</span>).<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">err</span>)
-        <span style="color:#66d9ef">return</span>
-      }
-
-      <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;&#39;</span>)
-    }
-  )
-})
-
-<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">NODE_ENV</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;test&#39;</span>) {
-  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
-    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Listening on port </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
-  })
-}
-
-<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">app</span>
-</code></pre></div><p>Este é um código relativamente simples. Ele recebe um arquivo enviado e reenvia para o S3 da AWS.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">multer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;multer&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">AWS</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;dotenv&#39;</span>).<span style="color:#a6e22e">config</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">update</span>({ <span style="color:#a6e22e">region</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_REGION</span> })
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s3</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">S3</span>({ <span style="color:#a6e22e">apiVersion</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;2006-03-01&#39;</span> })
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">upload</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multer</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>, <span style="color:#a6e22e">upload</span>.<span style="color:#a6e22e">single</span>(<span style="color:#e6db74">&#39;file&#39;</span>), (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">file</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">file</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">upload</span>(
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_BUCKET</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">originalname</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">buffer</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    (<span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">data</span>) =&gt; {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">err</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">500</span>).<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">err</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;&#39;</span>)
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">NODE_ENV</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;test&#39;</span>) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Listening on port </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+</span></span><span style="display:flex;"><span>  })
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">app</span>
+</span></span></code></pre></div><p>Este é um código relativamente simples. Ele recebe um arquivo enviado e reenvia para o S3 da AWS.
 Agora, vamos ver como podemos testar isso:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../index&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">AWS</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
-
-<span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
-
-<span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;deve enviar arquivo para s3&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">S3Client</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">S3</span>.<span style="color:#a6e22e">mock</span>.<span style="color:#a6e22e">instances</span>[<span style="color:#ae81ff">0</span>]
-  <span style="color:#a6e22e">S3Client</span>.<span style="color:#a6e22e">upload</span>.<span style="color:#a6e22e">mockImplementation</span>((<span style="color:#a6e22e">params</span>, <span style="color:#a6e22e">callback</span>) =&gt; <span style="color:#a6e22e">callback</span>(<span style="color:#66d9ef">null</span>, <span style="color:#66d9ef">null</span>))
-
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>)
-    .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>)
-    .<span style="color:#a6e22e">attach</span>(<span style="color:#e6db74">&#39;file&#39;</span>, <span style="color:#e6db74">&#39;test/fixtures/image.jpeg&#39;</span>)
-    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>)
-
-  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">S3Client</span>.<span style="color:#a6e22e">upload</span>).<span style="color:#a6e22e">toHaveBeenCalledWith</span>(
-    <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">objectContaining</span>({
-      <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;image.jpeg&#39;</span>
-    }),
-    <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">any</span>(Function)
-  )
-})
-</code></pre></div><h2 id="o-código-sabe-demais">O código sabe demais<a hidden class="anchor" aria-hidden="true" href="#o-código-sabe-demais">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../index&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">AWS</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;deve enviar arquivo para s3&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">S3Client</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">S3</span>.<span style="color:#a6e22e">mock</span>.<span style="color:#a6e22e">instances</span>[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">S3Client</span>.<span style="color:#a6e22e">upload</span>.<span style="color:#a6e22e">mockImplementation</span>((<span style="color:#a6e22e">params</span>, <span style="color:#a6e22e">callback</span>) =&gt; <span style="color:#a6e22e">callback</span>(<span style="color:#66d9ef">null</span>, <span style="color:#66d9ef">null</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">attach</span>(<span style="color:#e6db74">&#39;file&#39;</span>, <span style="color:#e6db74">&#39;test/fixtures/image.jpeg&#39;</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">S3Client</span>.<span style="color:#a6e22e">upload</span>).<span style="color:#a6e22e">toHaveBeenCalledWith</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">objectContaining</span>({
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;image.jpeg&#39;</span>
+</span></span><span style="display:flex;"><span>    }),
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">any</span>(Function)
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><h2 id="o-código-sabe-demais">O código sabe demais<a hidden class="anchor" aria-hidden="true" href="#o-código-sabe-demais">#</a></h2>
 <p>Qual o problema com o código acima? Ele simplesmente sabe demais. Ele sabe como receber uma requisição http
 e como respondê-la e também os detalhes de como fazer o upload para a S3.
 Os detalhes de como o SDK da AWS funciona estão vazando para nosso código, e nós não queremos isso. Em um
@@ -292,81 +292,81 @@ da AWS.</p>
 </p>
 <p>Então, vamos refatorar nosso método de upload em uma forma mais desacoplada:</p>
 <p>index.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">multer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;multer&#39;</span>)
-<span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">uploadFile</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./s3_client&#39;</span>)
-
-<span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;dotenv&#39;</span>).<span style="color:#a6e22e">config</span>()
-
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">upload</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multer</span>()
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
-
-<span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>, <span style="color:#a6e22e">upload</span>.<span style="color:#a6e22e">single</span>(<span style="color:#e6db74">&#39;file&#39;</span>), <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">file</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">file</span>
-
-  <span style="color:#66d9ef">try</span> {
-    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">uploadFile</span>(<span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">originalname</span>, <span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">buffer</span>)
-    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;&#39;</span>)
-  } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">e</span>) {
-    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">500</span>).<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">e</span>)
-    <span style="color:#66d9ef">return</span>
-  }
-})
-
-<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">NODE_ENV</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;test&#39;</span>) {
-  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
-    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Listening on port </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
-  })
-}
-
-<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">app</span>
-</code></pre></div><p> </p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">express</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;express&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">multer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;multer&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">uploadFile</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./s3_client&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;dotenv&#39;</span>).<span style="color:#a6e22e">config</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">express</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">upload</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">multer</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3000</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>, <span style="color:#a6e22e">upload</span>.<span style="color:#a6e22e">single</span>(<span style="color:#e6db74">&#39;file&#39;</span>), <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">file</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">file</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">uploadFile</span>(<span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">originalname</span>, <span style="color:#a6e22e">file</span>.<span style="color:#a6e22e">buffer</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;&#39;</span>)
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">e</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">500</span>).<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">e</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">NODE_ENV</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;test&#39;</span>) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">port</span>, () =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Listening on port </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">port</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>)
+</span></span><span style="display:flex;"><span>  })
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">app</span>
+</span></span></code></pre></div><p> </p>
 <p>s3_client.js:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">AWS</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
-
-<span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">update</span>({ <span style="color:#a6e22e">region</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_REGION</span> })
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s3</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">S3</span>({ <span style="color:#a6e22e">apiVersion</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;2006-03-01&#39;</span> })
-
-<span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> {
-  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">uploadFile</span> (<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">data</span>) {
-    <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
-      <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">upload</span>(
-        {
-          <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_BUCKET</span>,
-          <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">name</span>,
-          <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">data</span>
-        },
-        (<span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">data</span>) =&gt; {
-          <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">err</span>) {
-            <span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">err</span>)
-            <span style="color:#66d9ef">return</span>
-          }
-
-          <span style="color:#a6e22e">resolve</span>()
-        }
-      )
-    })
-  }
-}
-</code></pre></div><p>Nós movemos todoa a logica de &ldquo;como enviar um arquivo para a S3&rdquo; para a função <code>uploadFile</code>. O método
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">AWS</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;aws-sdk&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">update</span>({ <span style="color:#a6e22e">region</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_REGION</span> })
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s3</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">AWS</span>.<span style="color:#a6e22e">S3</span>({ <span style="color:#a6e22e">apiVersion</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;2006-03-01&#39;</span> })
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module</span>.<span style="color:#a6e22e">exports</span> <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">async</span> <span style="color:#a6e22e">uploadFile</span> (<span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">data</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">resolve</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">upload</span>(
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">AWS_BUCKET</span>,
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">name</span>,
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">data</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        (<span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">data</span>) =&gt; {
+</span></span><span style="display:flex;"><span>          <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">err</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">err</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>          }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">resolve</span>()
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      )
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Nós movemos todoa a logica de &ldquo;como enviar um arquivo para a S3&rdquo; para a função <code>uploadFile</code>. O método
 <code>/upload</code> não se importa <strong>como</strong> o arquivo é enviado para a S3. Ele apenas se importa se o arquivo foi
 enviado ou não. Consequentemente, podemos ver que testar esta versão do nosso método é muito mais simples:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../index&#39;</span>)
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
-<span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">uploadFile</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../s3_client&#39;</span>)
-
-<span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;../s3_client&#39;</span>)
-
-<span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;deve enviar arquivo para s3&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
-  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>)
-    .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>)
-    .<span style="color:#a6e22e">attach</span>(<span style="color:#e6db74">&#39;file&#39;</span>, <span style="color:#e6db74">&#39;test/fixtures/image.jpeg&#39;</span>)
-    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>)
-
-  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">uploadFile</span>).<span style="color:#a6e22e">toHaveBeenCalledWith</span>(<span style="color:#e6db74">&#39;image.jpeg&#39;</span>, <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">any</span>(<span style="color:#a6e22e">Buffer</span>))
-})
-</code></pre></div><p> </p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">app</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../index&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">request</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;supertest&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">uploadFile</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;../s3_client&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jest</span>.<span style="color:#a6e22e">mock</span>(<span style="color:#e6db74">&#39;../s3_client&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;deve enviar arquivo para s3&#39;</span>, <span style="color:#66d9ef">async</span> () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">app</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/upload&#39;</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">attach</span>(<span style="color:#e6db74">&#39;file&#39;</span>, <span style="color:#e6db74">&#39;test/fixtures/image.jpeg&#39;</span>)
+</span></span><span style="display:flex;"><span>    .<span style="color:#a6e22e">expect</span>(<span style="color:#ae81ff">200</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">uploadFile</span>).<span style="color:#a6e22e">toHaveBeenCalledWith</span>(<span style="color:#e6db74">&#39;image.jpeg&#39;</span>, <span style="color:#a6e22e">expect</span>.<span style="color:#a6e22e">any</span>(<span style="color:#a6e22e">Buffer</span>))
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p> </p>
 <p>Como podemos ver, nós deixamos o nosso teste mais simples e o nosso código mais limpo no processo.
 Ganhamos em ambos os lados. E isso é o que normalmente acontece.</p>
 <p>Testar o seu código não vai o fazer mais limpo por si só, porém deixando o seu código mais fácil
@@ -382,7 +382,7 @@ seu código é muito acoplado.</p>
     </main>
     
 <footer class="footer">
-    <span>&copy; 2022 <a href="https://cesarzagonel.github.io/br/">Cesar Zagonel</a></span>
+    <span>&copy; 2023 <a href="https://cesarzagonel.github.io/br/">Cesar Zagonel</a></span>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
